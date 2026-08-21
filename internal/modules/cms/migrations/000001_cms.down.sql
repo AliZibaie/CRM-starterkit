@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS cms_faqs;
+DROP TABLE IF EXISTS cms_seo_meta;
+DROP TABLE IF EXISTS cms_menus;
+DROP TABLE IF EXISTS cms_blocks;
+DROP TABLE IF EXISTS cms_pages;

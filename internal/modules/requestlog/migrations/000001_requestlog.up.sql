@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS request_logs (
+    id VARCHAR(36) PRIMARY KEY,
+    request_id VARCHAR(36) NOT NULL DEFAULT '',
+    ip VARCHAR(64) NOT NULL DEFAULT '',
+    method VARCHAR(16) NOT NULL DEFAULT '',
+    path VARCHAR(500) NOT NULL DEFAULT '',
+    headers_json TEXT,
+    payload TEXT,
+    duration_ms BIGINT NOT NULL DEFAULT 0,
+    status INT NOT NULL DEFAULT 0,
+    user_id VARCHAR(36) NOT NULL DEFAULT '',
+    user_agent VARCHAR(500) NOT NULL DEFAULT '',
+    country VARCHAR(100) NOT NULL DEFAULT '',
+    city VARCHAR(100) NOT NULL DEFAULT '',
+    suspicious BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL
+);

@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS media_files (
+    id VARCHAR(36) PRIMARY KEY,
+    owner_id VARCHAR(36) NOT NULL DEFAULT '',
+    key VARCHAR(500) NOT NULL,
+    url VARCHAR(500) NOT NULL,
+    thumbnail_key VARCHAR(500) NOT NULL DEFAULT '',
+    thumbnail_url VARCHAR(500) NOT NULL DEFAULT '',
+    content_type VARCHAR(120) NOT NULL DEFAULT '',
+    size BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL
+);

@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS banners (
+    id VARCHAR(36) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    link_url VARCHAR(500) NOT NULL DEFAULT '',
+    position VARCHAR(100) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    starts_at TIMESTAMP NULL,
+    ends_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);

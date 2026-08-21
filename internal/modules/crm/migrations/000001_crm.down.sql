@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS crm_segments;
+DROP TABLE IF EXISTS crm_entity_tags;
+DROP TABLE IF EXISTS crm_tags;
+DROP TABLE IF EXISTS crm_tasks;
+DROP TABLE IF EXISTS crm_activities;
+DROP TABLE IF EXISTS crm_deals;
+DROP TABLE IF EXISTS crm_pipelines;
+DROP TABLE IF EXISTS crm_contacts;
+DROP TABLE IF EXISTS crm_leads;

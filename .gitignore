@@ -1,0 +1,101 @@
+# --- Environment & secrets ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- Go build / binaries ---
+/bin/
+/dist/
+/build/
+/out/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.pprof
+__debug_bin*
+debug
+
+# Local Go cache (do not commit)
+.gocache/
+.cache/
+pkg/mod/
+
+# Dependency vendor tree (prefer go modules)
+/vendor/
+
+# Coverage & test artifacts
+coverage.*
+*.cover
+*.coverprofile
+profile.cov
+*.html.cov
+
+# --- App runtime data ---
+/storage/*
+!/storage/.gitkeep
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Uploads / media (local driver)
+/uploads/
+/tmp/
+/temp/
+*.tmp
+*.temp
+
+# --- Logs ---
+/logs/
+*.log
+*.log.*
+
+# --- Air / live reload ---
+.air.toml.bak
+tmp/air/
+build-errors.log
+
+# --- IDE / editors ---
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# --- OS junk ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# --- Docker / Compose local overrides ---
+docker-compose.override.yml
+docker-compose.*.local.yml
+*.local.yml
+
+# --- Misc ---
+*.bak
+*.old
+*.orig
+*.pid
+*.seed
+*.pid.lock
+.history/
