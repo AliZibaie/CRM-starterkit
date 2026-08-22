@@ -72,6 +72,33 @@ func (s *Service) CreateItem(ctx context.Context, typ, name, description, catego
 
 func (s *Service) ListItems(ctx context.Context) ([]domain.Item, error) { return s.repo.ListItems(ctx) }
 
+func (s *Service) ListPublicItems(ctx context.Context) ([]domain.Item, error) {
+	return s.repo.ListActiveItems(ctx)
+}
+
+func (s *Service) GetItemBySlug(ctx context.Context, slug string) (*domain.Item, []domain.Attribute, []domain.Variant, error) {
+	item, err := s.repo.FindItemBySlug(ctx, slug)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil, nil, ErrNotFound
+		}
+		return nil, nil, nil, err
+	}
+	return s.GetItem(ctx, item.ID)
+}
+
+func (s *Service) GetCategoryBySlug(ctx context.Context, slug string) (*domain.Category, []domain.Item, error) {
+	cat, err := s.repo.FindCategoryBySlug(ctx, slug)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil, ErrNotFound
+		}
+		return nil, nil, err
+	}
+	items, err := s.repo.ListItemsByCategory(ctx, cat.ID)
+	return cat, items, err
+}
+
 func (s *Service) GetItem(ctx context.Context, id string) (*domain.Item, []domain.Attribute, []domain.Variant, error) {
 	item, err := s.repo.FindItem(ctx, id)
 	if err != nil {

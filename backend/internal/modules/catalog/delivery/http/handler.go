@@ -212,7 +212,45 @@ func (h *Handler) GetInventory(c *fiber.Ctx) error {
 	return response.OK(c, inv)
 }
 
+func (h *Handler) ListPublicItems(c *fiber.Ctx) error {
+	items, err := h.service.ListPublicItems(c.Context())
+	if err != nil {
+		return response.Internal(c, err.Error())
+	}
+	return response.OK(c, items)
+}
+
+func (h *Handler) GetPublicItem(c *fiber.Ctx) error {
+	item, attrs, variants, err := h.service.GetItemBySlug(c.Context(), c.Params("slug"))
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, fiber.Map{"item": item, "attributes": attrs, "variants": variants})
+}
+
+func (h *Handler) ListPublicCategories(c *fiber.Ctx) error {
+	items, err := h.service.ListCategories(c.Context())
+	if err != nil {
+		return response.Internal(c, err.Error())
+	}
+	return response.OK(c, items)
+}
+
+func (h *Handler) GetPublicCategory(c *fiber.Ctx) error {
+	cat, items, err := h.service.GetCategoryBySlug(c.Context(), c.Params("slug"))
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, fiber.Map{"category": cat, "items": items})
+}
+
 func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
+	pub := router.Group("/catalog/public")
+	pub.Get("/items", h.ListPublicItems)
+	pub.Get("/items/:slug", h.GetPublicItem)
+	pub.Get("/categories", h.ListPublicCategories)
+	pub.Get("/categories/:slug", h.GetPublicCategory)
+
 	g := router.Group("/catalog", middleware.Auth(jwt))
 	g.Post("/categories", middleware.RequireAnyPermission("catalog.category.manage"), h.CreateCategory)
 	g.Get("/categories", middleware.RequireAnyPermission("catalog.read"), h.ListCategories)

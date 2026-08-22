@@ -102,6 +102,50 @@ func (s *Store) UpdateItem(ctx context.Context, item *domain.Item) error {
 	return s.db.WithContext(ctx).Save(itemModel(item)).Error
 }
 
+func (s *Store) FindItemBySlug(ctx context.Context, slug string) (*domain.Item, error) {
+	var m ItemModel
+	if err := s.db.WithContext(ctx).First(&m, "slug = ? AND is_active = ?", slug, true).Error; err != nil {
+		return nil, err
+	}
+	return itemDomain(&m), nil
+}
+
+func (s *Store) ListActiveItems(ctx context.Context) ([]domain.Item, error) {
+	var rows []ItemModel
+	if err := s.db.WithContext(ctx).Where("is_active = ?", true).Order("created_at desc").Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make([]domain.Item, 0, len(rows))
+	for i := range rows {
+		out = append(out, *itemDomain(&rows[i]))
+	}
+	return out, nil
+}
+
+func (s *Store) FindCategoryBySlug(ctx context.Context, slug string) (*domain.Category, error) {
+	var m CategoryModel
+	if err := s.db.WithContext(ctx).First(&m, "slug = ?", slug).Error; err != nil {
+		return nil, err
+	}
+	return &domain.Category{ID: m.ID, Name: m.Name, Slug: m.Slug, ParentID: m.ParentID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
+}
+
+func (s *Store) ListItemsByCategory(ctx context.Context, categoryID string) ([]domain.Item, error) {
+	var rows []ItemModel
+	q := s.db.WithContext(ctx).Where("is_active = ?", true)
+	if categoryID != "" {
+		q = q.Where("category_id = ?", categoryID)
+	}
+	if err := q.Order("created_at desc").Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make([]domain.Item, 0, len(rows))
+	for i := range rows {
+		out = append(out, *itemDomain(&rows[i]))
+	}
+	return out, nil
+}
+
 func (s *Store) FindItem(ctx context.Context, id string) (*domain.Item, error) {
 	var m ItemModel
 	if err := s.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {

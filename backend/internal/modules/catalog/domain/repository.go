@@ -9,7 +9,12 @@ type Repository interface {
 	CreateItem(ctx context.Context, item *Item) error
 	UpdateItem(ctx context.Context, item *Item) error
 	FindItem(ctx context.Context, id string) (*Item, error)
+	FindItemBySlug(ctx context.Context, slug string) (*Item, error)
 	ListItems(ctx context.Context) ([]Item, error)
+	ListActiveItems(ctx context.Context) ([]Item, error)
+
+	FindCategoryBySlug(ctx context.Context, slug string) (*Category, error)
+	ListItemsByCategory(ctx context.Context, categoryID string) ([]Item, error)
 
 	UpsertAttribute(ctx context.Context, a *Attribute) error
 	ListAttributes(ctx context.Context, itemID string) ([]Attribute, error)

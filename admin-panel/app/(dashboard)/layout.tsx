@@ -13,25 +13,21 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
-  const [hydrated, setHydrated] = useState(
-    () => useAuthStore.persist.hasHydrated()
-  );
+  const loadFromStorage = useAuthStore((s) => s.loadFromStorage);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const unsub = useAuthStore.persist.onFinishHydration(() =>
-      setHydrated(true)
-    );
-    setHydrated(useAuthStore.persist.hasHydrated());
-    return unsub;
-  }, []);
+    loadFromStorage();
+    setReady(true);
+  }, [loadFromStorage]);
 
   useEffect(() => {
-    if (hydrated && !accessToken) {
+    if (ready && !accessToken) {
       router.replace("/login");
     }
-  }, [hydrated, accessToken, router]);
+  }, [ready, accessToken, router]);
 
-  if (!hydrated || !accessToken) {
+  if (!ready || !accessToken) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
