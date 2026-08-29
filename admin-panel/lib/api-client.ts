@@ -72,6 +72,21 @@ async function ensureRefreshed(): Promise<boolean> {
   return refreshPromise;
 }
 
+async function parseEnvelope<T>(res: Response): Promise<ApiEnvelope<T>> {
+  const text = await res.text();
+  if (!text) {
+    return {
+      success: res.ok,
+      message: res.statusText || undefined,
+    };
+  }
+  try {
+    return JSON.parse(text) as ApiEnvelope<T>;
+  } catch {
+    throw new ApiError(text || res.statusText || "Request failed", res.status);
+  }
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -91,8 +106,11 @@ async function request<T>(
   let json: ApiEnvelope<T>;
   try {
     res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-    json = (await res.json()) as ApiEnvelope<T>;
-  } catch {
+    json = await parseEnvelope<T>(res);
+  } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
     throw new ApiError("network_error", 0);
   }
   if (

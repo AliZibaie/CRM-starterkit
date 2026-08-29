@@ -16,6 +16,12 @@ func (f PermissionFunc) HasPermission(userID string, permission string) (bool, e
 	return f(userID, permission)
 }
 
+var permissionChecker PermissionChecker
+
+func SetPermissionChecker(checker PermissionChecker) {
+	permissionChecker = checker
+}
+
 func RBAC(checker PermissionChecker, permission string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userID := UserIDFromContext(c)
@@ -56,6 +62,17 @@ func RequireAnyPermission(permissions ...string) fiber.Handler {
 		for _, p := range PermissionsFromContext(c) {
 			if _, ok := set[p]; ok || p == "*" {
 				return c.Next()
+			}
+		}
+		if permissionChecker != nil {
+			for perm := range set {
+				ok, err := permissionChecker.HasPermission(userID, perm)
+				if err != nil {
+					return response.Internal(c, "permission check failed")
+				}
+				if ok {
+					return c.Next()
+				}
 			}
 		}
 		return response.Forbidden(c, "insufficient permissions")
