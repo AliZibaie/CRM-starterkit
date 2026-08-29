@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 
 interface Contact {
@@ -25,8 +26,8 @@ export default function ContactsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Contacts</h1>
-        <p className="text-muted-foreground">CRM contacts directory</p>
+        <h1 className="text-2xl font-bold">{t("pages.contacts.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.contacts.subtitle")}</p>
       </div>
 
       <DataTable
@@ -34,10 +35,10 @@ export default function ContactsPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "name", header: "Name" },
-          { key: "email", header: "Email" },
-          { key: "phone", header: "Phone" },
-          { key: "company", header: "Company" },
+          { key: "name", header: t("common.name") },
+          { key: "email", header: t("common.email") },
+          { key: "phone", header: t("common.phone") },
+          { key: "company", header: t("common.company") },
         ]}
       />
     </div>

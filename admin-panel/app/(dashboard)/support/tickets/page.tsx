@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatJalaliDateTime } from "@/lib/date";
 import { useAuthStore } from "@/stores/auth-store";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
@@ -50,18 +52,18 @@ const WS_BASE =
   process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/api/v1";
 
 const fields: FormField[] = [
-  { name: "subject", label: "Subject", type: "text", required: true },
+  { name: "subject", label: t("common.subject"), type: "text", required: true },
   {
     name: "priority",
-    label: "Priority",
+    label: t("common.priority"),
     type: "select",
     options: [
-      { label: "Low", value: "low" },
-      { label: "Medium", value: "medium" },
-      { label: "High", value: "high" },
+      { label: t("common.priorityLow"), value: "low" },
+      { label: t("common.priorityMedium"), value: "medium" },
+      { label: t("common.priorityHigh"), value: "high" },
     ],
   },
-  { name: "department_id", label: "Department", type: "select", options: [] },
+  { name: "department_id", label: t("common.department"), type: "select", options: [] },
 ];
 
 export default function SupportTicketsPage() {
@@ -178,18 +180,18 @@ export default function SupportTicketsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Support Tickets</h1>
-          <p className="text-muted-foreground">Manage customer support tickets</p>
+          <h1 className="text-2xl font-bold">{t("pages.tickets.title")}</h1>
+          <p className="text-muted-foreground">{t("pages.tickets.subtitle")}</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Cancel" : "New Ticket"}
+          {showForm ? t("common.cancel") : t("pages.tickets.newTicket")}
         </Button>
       </div>
 
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create Ticket</CardTitle>
+            <CardTitle>{t("pages.tickets.create")}</CardTitle>
           </CardHeader>
           <CardContent>
             <DynamicForm
@@ -209,26 +211,30 @@ export default function SupportTicketsPage() {
           data={data as unknown as Record<string, unknown>[]}
           keyField="id"
           columns={[
-            { key: "subject", header: "Subject" },
+            { key: "subject", header: t("common.subject") },
             {
               key: "status",
-              header: "Status",
+              header: t("common.status"),
               render: (row) => (
                 <Badge variant="outline">{String(row.status)}</Badge>
               ),
             },
-            { key: "priority", header: "Priority" },
-            { key: "created_at", header: "Created" },
+            { key: "priority", header: t("common.priority") },
+            {
+              key: "created_at",
+              header: t("common.createdAt"),
+              render: (row) => formatJalaliDateTime(row.created_at as string),
+            },
             {
               key: "actions",
-              header: "Actions",
+              header: t("common.actions"),
               render: (row) => (
                 <Button
                   size="sm"
                   variant={selectedId === row.id ? "default" : "outline"}
                   onClick={() => setSelectedId(row.id as string)}
                 >
-                  View
+                  {t("common.view")}
                 </Button>
               ),
             },
@@ -240,7 +246,7 @@ export default function SupportTicketsPage() {
             <CardHeader>
               <div className="flex items-start justify-between gap-2">
                 <CardTitle className="text-base">
-                  {detailLoading ? "Loading..." : ticketDetail?.subject}
+                  {detailLoading ? t("common.loading") : ticketDetail?.subject}
                 </CardTitle>
                 <div className="flex gap-2">
                   <Select
@@ -248,12 +254,12 @@ export default function SupportTicketsPage() {
                     onValueChange={(v) => statusMutation.mutate(v)}
                   >
                     <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
+                      <SelectValue placeholder={t("common.status")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="open">Open</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="resolved">Resolved</SelectItem>
+                      <SelectItem value="open">{t("status.open")}</SelectItem>
+                      <SelectItem value="pending">{t("status.pending")}</SelectItem>
+                      <SelectItem value="resolved">{t("status.resolved")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
@@ -261,7 +267,7 @@ export default function SupportTicketsPage() {
                     variant="destructive"
                     onClick={() => closeMutation.mutate()}
                   >
-                    Close
+                    {t("common.close")}
                   </Button>
                 </div>
               </div>
@@ -275,8 +281,8 @@ export default function SupportTicketsPage() {
                   >
                     <p>{msg.body}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {msg.created_at}
-                      {msg.is_internal && " (internal)"}
+                      {formatJalaliDateTime(msg.created_at)}
+                      {msg.is_internal && ` (${t("common.internal")})`}
                     </p>
                   </div>
                 ))}
@@ -285,13 +291,13 @@ export default function SupportTicketsPage() {
                     key={`ws-${i}`}
                     className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm"
                   >
-                    <p className="text-xs text-muted-foreground">Live</p>
+                    <p className="text-xs text-muted-foreground">{t("common.live")}</p>
                     <p>{msg}</p>
                   </div>
                 ))}
               </div>
               <div className="space-y-2">
-                <Label>Reply</Label>
+                <Label>{t("common.reply")}</Label>
                 <Textarea
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
@@ -300,7 +306,7 @@ export default function SupportTicketsPage() {
                   onClick={() => replyMutation.mutate()}
                   disabled={replyMutation.isPending || !reply}
                 >
-                  Send Reply
+                  {t("common.sendReply")}
                 </Button>
               </div>
             </CardContent>

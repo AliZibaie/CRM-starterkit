@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatJalaliDateTime } from "@/lib/date";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,8 +19,8 @@ interface Announcement {
 }
 
 const fields: FormField[] = [
-  { name: "title", label: "Title", type: "text", required: true },
-  { name: "body", label: "Body", type: "textarea", required: true },
+  { name: "title", label: t("common.title"), type: "text", required: true },
+  { name: "body", label: t("common.body"), type: "textarea", required: true },
 ];
 
 export default function AnnouncementsPage() {
@@ -58,18 +60,18 @@ export default function AnnouncementsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Announcements</h1>
-          <p className="text-muted-foreground">Create and broadcast announcements</p>
+          <h1 className="text-2xl font-bold">{t("pages.announcements.title")}</h1>
+          <p className="text-muted-foreground">{t("pages.announcements.subtitle")}</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Cancel" : "New Announcement"}
+          {showForm ? t("common.cancel") : t("pages.announcements.newAnnouncement")}
         </Button>
       </div>
 
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create Announcement</CardTitle>
+            <CardTitle>{t("pages.announcements.create")}</CardTitle>
           </CardHeader>
           <CardContent>
             <DynamicForm
@@ -88,19 +90,23 @@ export default function AnnouncementsPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "title", header: "Title" },
-          { key: "body", header: "Body" },
-          { key: "created_at", header: "Created" },
+          { key: "title", header: t("common.title") },
+          { key: "body", header: t("common.body") },
+          {
+            key: "created_at",
+            header: t("common.createdAt"),
+            render: (row) => formatJalaliDateTime(row.created_at as string),
+          },
           {
             key: "actions",
-            header: "Actions",
+            header: t("common.actions"),
             render: (row) => (
               <Button
                 size="sm"
                 onClick={() => broadcastMutation.mutate(row.id as string)}
                 disabled={broadcastMutation.isPending}
               >
-                Broadcast
+                {t("common.broadcast")}
               </Button>
             ),
           },

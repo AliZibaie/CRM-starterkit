@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,25 +134,25 @@ export default function PipelinePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Pipeline</h1>
-        <p className="text-muted-foreground">Kanban pipeline management</p>
+        <h1 className="text-2xl font-bold">{t("pages.pipeline.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.pipeline.subtitle")}</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Upsert Pipeline</CardTitle>
+            <CardTitle>{t("pages.pipeline.upsertPipeline")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{t("common.name")}</Label>
               <Input
                 value={pipelineName}
                 onChange={(e) => setPipelineName(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Stages JSON</Label>
+              <Label>{t("pages.pipeline.stagesJson")}</Label>
               <Input
                 value={stagesJson}
                 onChange={(e) => setStagesJson(e.target.value)}
@@ -161,14 +162,14 @@ export default function PipelinePage() {
               onClick={() => upsertPipeline.mutate()}
               disabled={upsertPipeline.isPending}
             >
-              Save Pipeline
+              {t("pages.pipeline.savePipeline")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Create Deal</CardTitle>
+            <CardTitle>{t("pages.pipeline.createDeal")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Select
@@ -179,7 +180,7 @@ export default function PipelinePage() {
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Pipeline" />
+                <SelectValue placeholder={t("common.selectPipeline")} />
               </SelectTrigger>
               <SelectContent>
                 {pipelines.map((p) => (
@@ -190,18 +191,18 @@ export default function PipelinePage() {
               </SelectContent>
             </Select>
             <Input
-              placeholder="Title"
+              placeholder={t("common.title")}
               value={dealTitle}
               onChange={(e) => setDealTitle(e.target.value)}
             />
             <Input
-              placeholder="Contact ID"
+              placeholder={t("pages.pipeline.contactId")}
               value={contactId}
               onChange={(e) => setContactId(e.target.value)}
             />
             <Select value={stage} onValueChange={setStage}>
               <SelectTrigger>
-                <SelectValue placeholder="Stage" />
+                <SelectValue placeholder={t("common.selectStage")} />
               </SelectTrigger>
               <SelectContent>
                 {stages.map((s) => (
@@ -217,14 +218,14 @@ export default function PipelinePage() {
                 createDeal.isPending || !dealTitle || !pipelineId || !stage
               }
             >
-              Create Deal
+              {t("pages.pipeline.createDeal")}
             </Button>
           </CardContent>
         </Card>
       </div>
 
       {pipelineId && stages.length > 0 && (
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex flex-row-reverse gap-4 overflow-x-auto pb-4">
           {stages.map((s) => (
             <div
               key={s}
@@ -250,7 +251,9 @@ export default function PipelinePage() {
                     </div>
                   ))}
                   {(dealsByStage[s] ?? []).length === 0 && (
-                    <p className="text-xs text-muted-foreground">Drop deals here</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("pages.pipeline.dropHere")}
+                    </p>
                   )}
                 </CardContent>
               </Card>

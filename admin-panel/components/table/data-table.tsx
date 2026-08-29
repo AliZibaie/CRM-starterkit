@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 export interface Column<T> {
   key: string;
@@ -22,7 +23,7 @@ export function DataTable<T extends Record<string, unknown>>({
   columns,
   data,
   keyField,
-  emptyMessage = "No data",
+  emptyMessage,
   loading,
 }: DataTableProps<T>) {
   const getKey = (row: T) =>
@@ -31,7 +32,7 @@ export function DataTable<T extends Record<string, unknown>>({
   if (loading) {
     return (
       <div className="rounded-md border border-border p-8 text-center text-muted-foreground">
-        Loading...
+        {t("common.loading")}
       </div>
     );
   }
@@ -45,7 +46,7 @@ export function DataTable<T extends Record<string, unknown>>({
               <th
                 key={col.key}
                 className={cn(
-                  "px-4 py-3 text-left font-medium text-muted-foreground",
+                  "px-4 py-3 text-start font-medium text-muted-foreground",
                   col.className
                 )}
               >
@@ -61,7 +62,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 colSpan={columns.length}
                 className="px-4 py-8 text-center text-muted-foreground"
               >
-                {emptyMessage}
+                {emptyMessage ?? t("common.noData")}
               </td>
             </tr>
           ) : (
@@ -71,7 +72,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 className="border-b border-border last:border-0 hover:bg-muted/30"
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={cn("px-4 py-3", col.className)}>
+                  <td key={col.key} className={cn("px-4 py-3 text-start", col.className)}>
                     {col.render
                       ? col.render(row)
                       : String(row[col.key] ?? "")}

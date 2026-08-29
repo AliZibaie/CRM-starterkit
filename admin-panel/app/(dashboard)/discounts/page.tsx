@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,26 +60,26 @@ export default function DiscountsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Discounts</h1>
-        <p className="text-muted-foreground">Discount codes and preview</p>
+        <h1 className="text-2xl font-bold">{t("pages.discounts.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.discounts.subtitle")}</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Create Discount</CardTitle>
+            <CardTitle>{t("pages.discounts.createDiscount")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>Code</Label>
+              <Label>{t("common.code")}</Label>
               <Input value={code} onChange={(e) => setCode(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Type</Label>
+              <Label>{t("common.type")}</Label>
               <Input value={type} onChange={(e) => setType(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Value</Label>
+              <Label>{t("common.value")}</Label>
               <Input
                 type="number"
                 value={value}
@@ -86,25 +87,25 @@ export default function DiscountsPage() {
               />
             </div>
             <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-              Create
+              {t("common.create")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Preview Discount</CardTitle>
+            <CardTitle>{t("pages.discounts.previewDiscount")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>Code</Label>
+              <Label>{t("common.code")}</Label>
               <Input
                 value={previewCode}
                 onChange={(e) => setPreviewCode(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Amount (cents)</Label>
+              <Label>{t("common.amountCents")}</Label>
               <Input
                 type="number"
                 value={previewAmount}
@@ -112,7 +113,7 @@ export default function DiscountsPage() {
               />
             </div>
             <Button onClick={() => previewMutation.mutate()} disabled={previewMutation.isPending}>
-              Preview
+              {t("common.preview")}
             </Button>
             {previewResult && (
               <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
@@ -128,13 +129,13 @@ export default function DiscountsPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "code", header: "Code" },
-          { key: "type", header: "Type" },
-          { key: "value", header: "Value" },
+          { key: "code", header: t("common.code") },
+          { key: "type", header: t("common.type") },
+          { key: "value", header: t("common.value") },
           {
             key: "is_active",
-            header: "Active",
-            render: (row) => (row.is_active ? "Yes" : "No"),
+            header: t("common.active"),
+            render: (row) => (row.is_active ? t("common.yes") : t("common.no")),
           },
         ]}
       />

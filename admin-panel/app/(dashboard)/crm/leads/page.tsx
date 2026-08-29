@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,10 +20,10 @@ interface Lead {
 }
 
 const fields: FormField[] = [
-  { name: "name", label: "Name", type: "text", required: true },
-  { name: "email", label: "Email", type: "email" },
-  { name: "phone", label: "Phone", type: "text" },
-  { name: "source", label: "Source", type: "text" },
+  { name: "name", label: t("common.name"), type: "text", required: true },
+  { name: "email", label: t("common.email"), type: "email" },
+  { name: "phone", label: t("common.phone"), type: "text" },
+  { name: "source", label: t("common.source"), type: "text" },
 ];
 
 export default function LeadsPage() {
@@ -62,13 +63,13 @@ export default function LeadsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Leads</h1>
-        <p className="text-muted-foreground">CRM lead management</p>
+        <h1 className="text-2xl font-bold">{t("pages.leads.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.leads.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create Lead</CardTitle>
+          <CardTitle>{t("pages.leads.createLead")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DynamicForm
@@ -86,20 +87,20 @@ export default function LeadsPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "name", header: "Name" },
-          { key: "email", header: "Email" },
-          { key: "phone", header: "Phone" },
-          { key: "source", header: "Source" },
-          { key: "status", header: "Status" },
+          { key: "name", header: t("common.name") },
+          { key: "email", header: t("common.email") },
+          { key: "phone", header: t("common.phone") },
+          { key: "source", header: t("common.source") },
+          { key: "status", header: t("common.status") },
           {
             key: "actions",
-            header: "Actions",
+            header: t("common.actions"),
             render: (row) => (
               <Button
                 size="sm"
                 onClick={() => convertMutation.mutate(row.id as string)}
               >
-                Convert
+                {t("common.convert")}
               </Button>
             ),
           },

@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 
@@ -24,8 +25,8 @@ export default function GatewaysStatusPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Payment Gateways</h1>
-        <p className="text-muted-foreground">Gateway status and configuration</p>
+        <h1 className="text-2xl font-bold">{t("pages.payments.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.payments.subtitle")}</p>
       </div>
 
       <DataTable
@@ -33,22 +34,22 @@ export default function GatewaysStatusPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="name"
         columns={[
-          { key: "name", header: "Gateway" },
+          { key: "name", header: t("common.gateway") },
           {
             key: "enabled",
-            header: "Enabled",
+            header: t("common.enabled"),
             render: (row) => (
               <Badge variant={row.enabled ? "success" : "secondary"}>
-                {row.enabled ? "Yes" : "No"}
+                {row.enabled ? t("common.yes") : t("common.no")}
               </Badge>
             ),
           },
           {
             key: "configured",
-            header: "Configured",
+            header: t("common.configured"),
             render: (row) => (
               <Badge variant={row.configured ? "success" : "destructive"}>
-                {row.configured ? "Yes" : "No"}
+                {row.configured ? t("common.yes") : t("common.no")}
               </Badge>
             ),
           },

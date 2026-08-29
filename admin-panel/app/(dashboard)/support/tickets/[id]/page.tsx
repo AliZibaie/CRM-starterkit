@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatJalaliDateTime } from "@/lib/date";
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +94,7 @@ export default function TicketDetailPage() {
   });
 
   if (isLoading) {
-    return <p className="text-muted-foreground">Loading...</p>;
+    return <p className="text-muted-foreground">{t("common.loading")}</p>;
   }
 
   return (
@@ -111,23 +113,23 @@ export default function TicketDetailPage() {
             onValueChange={(v) => statusMutation.mutate(v)}
           >
             <SelectTrigger className="w-36">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t("common.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="open">Open</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
+              <SelectItem value="open">{t("status.open")}</SelectItem>
+              <SelectItem value="pending">{t("status.pending")}</SelectItem>
+              <SelectItem value="resolved">{t("status.resolved")}</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="destructive" onClick={() => closeMutation.mutate()}>
-            Close
+            {t("common.close")}
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Messages</CardTitle>
+          <CardTitle>{t("pages.ticketDetail.messages")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {(ticket?.messages ?? []).map((msg) => (
@@ -137,8 +139,8 @@ export default function TicketDetailPage() {
             >
               <p>{msg.body}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {msg.created_at}
-                {msg.is_internal && " (internal)"}
+                {formatJalaliDateTime(msg.created_at)}
+                {msg.is_internal && ` (${t("common.internal")})`}
               </p>
             </div>
           ))}
@@ -147,7 +149,7 @@ export default function TicketDetailPage() {
               key={`ws-${i}`}
               className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm"
             >
-              <p className="text-xs text-muted-foreground">WebSocket</p>
+              <p className="text-xs text-muted-foreground">{t("common.live")}</p>
               <p>{msg}</p>
             </div>
           ))}
@@ -156,18 +158,18 @@ export default function TicketDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Reply</CardTitle>
+          <CardTitle>{t("pages.ticketDetail.reply")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <Label>Message</Label>
+            <Label>{t("common.message")}</Label>
             <Textarea value={reply} onChange={(e) => setReply(e.target.value)} />
           </div>
           <Button
             onClick={() => replyMutation.mutate()}
             disabled={replyMutation.isPending || !reply}
           >
-            Send Reply
+            {t("common.sendReply")}
           </Button>
         </CardContent>
       </Card>

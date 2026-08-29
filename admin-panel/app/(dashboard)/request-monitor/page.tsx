@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatGregorianDateTime } from "@/lib/date";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,10 +99,10 @@ export default function RequestMonitorPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Request Monitor</h1>
+          <h1 className="text-2xl font-bold">{t("pages.requestMonitor.title")}</h1>
           <p className="text-muted-foreground">
-            Live HTTP request log with filters
-            {isFetching && autoRefresh && " (refreshing...)"}
+            {t("pages.requestMonitor.subtitle")}
+            {isFetching && autoRefresh && t("common.refreshing")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -109,10 +111,10 @@ export default function RequestMonitorPage() {
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
           >
-            Auto-refresh {autoRefresh ? "ON" : "OFF"}
+            {autoRefresh ? t("common.autoRefreshOn") : t("common.autoRefreshOff")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
-            Refresh Now
+            {t("common.refreshNow")}
           </Button>
         </div>
       </div>
@@ -121,7 +123,9 @@ export default function RequestMonitorPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("pages.requestMonitor.totalRequests")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.total}</p>
@@ -129,7 +133,9 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Avg Duration</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("pages.requestMonitor.avgDuration")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.avg_duration_ms} ms</p>
@@ -137,7 +143,9 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Errors</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("pages.requestMonitor.errors")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.error_count}</p>
@@ -145,7 +153,9 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Suspicious</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("pages.requestMonitor.suspicious")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.suspicious_count}</p>
@@ -156,31 +166,31 @@ export default function RequestMonitorPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle>{t("common.filters")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           <div className="space-y-2">
-            <Label>IP</Label>
+            <Label>{t("common.ip")}</Label>
             <Input value={ip} onChange={(e) => setIp(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Path</Label>
+            <Label>{t("common.path")}</Label>
             <Input value={path} onChange={(e) => setPath(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Status</Label>
+            <Label>{t("common.status")}</Label>
             <Input value={status} onChange={(e) => setStatus(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>User ID</Label>
+            <Label>{t("common.userId")}</Label>
             <Input value={userId} onChange={(e) => setUserId(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>From (RFC3339)</Label>
+            <Label>{t("common.from")}</Label>
             <Input value={from} onChange={(e) => setFrom(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>To (RFC3339)</Label>
+            <Label>{t("common.to")}</Label>
             <Input value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
         </CardContent>
@@ -191,13 +201,17 @@ export default function RequestMonitorPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "created_at", header: "Time" },
-          { key: "ip", header: "IP" },
-          { key: "method", header: "Method" },
-          { key: "path", header: "Path" },
+          {
+            key: "created_at",
+            header: t("common.time"),
+            render: (row) => formatGregorianDateTime(row.created_at as string),
+          },
+          { key: "ip", header: t("common.ip") },
+          { key: "method", header: t("common.method") },
+          { key: "path", header: t("common.path") },
           {
             key: "status",
-            header: "Status",
+            header: t("common.status"),
             render: (row) => {
               const s = row.status as number;
               const variant =
@@ -205,16 +219,16 @@ export default function RequestMonitorPage() {
               return <Badge variant={variant}>{s}</Badge>;
             },
           },
-          { key: "user_id", header: "User" },
-          { key: "duration_ms", header: "Duration (ms)" },
+          { key: "user_id", header: t("common.userId") },
+          { key: "duration_ms", header: t("common.durationMs") },
           {
             key: "suspicious",
-            header: "Suspicious",
+            header: t("common.suspicious"),
             render: (row) =>
               row.suspicious ? (
-                <Badge variant="destructive">Yes</Badge>
+                <Badge variant="destructive">{t("common.yes")}</Badge>
               ) : (
-                "No"
+                t("common.no")
               ),
           },
         ]}

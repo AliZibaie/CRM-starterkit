@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -83,25 +84,25 @@ export default function BannersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Banners</h1>
-        <p className="text-muted-foreground">Manage promotional banners</p>
+        <h1 className="text-2xl font-bold">{t("pages.banners.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.banners.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create Banner</CardTitle>
+          <CardTitle>{t("pages.banners.createBanner")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <Label>Title</Label>
+            <Label>{t("common.title")}</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Image URL</Label>
+            <Label>{t("common.imageUrl")}</Label>
             <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
           </div>
           <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-            Create Banner
+            {t("pages.banners.create")}
           </Button>
         </CardContent>
       </Card>
@@ -109,41 +110,41 @@ export default function BannersPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Schedule Banner</CardTitle>
+            <CardTitle>{t("pages.banners.scheduleBanner")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>Banner ID</Label>
+              <Label>{t("common.bannerId")}</Label>
               <Input value={scheduleId} onChange={(e) => setScheduleId(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Starts At (RFC3339)</Label>
+              <Label>{t("pages.banners.startsAt")}</Label>
               <Input value={scheduleStart} onChange={(e) => setScheduleStart(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Ends At (RFC3339)</Label>
+              <Label>{t("pages.banners.endsAt")}</Label>
               <Input value={scheduleEnd} onChange={(e) => setScheduleEnd(e.target.value)} />
             </div>
             <Button onClick={() => scheduleMutation.mutate()} disabled={scheduleMutation.isPending}>
-              Schedule
+              {t("common.schedule")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Set Position</CardTitle>
+            <CardTitle>{t("pages.banners.setPosition")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>Banner ID</Label>
+              <Label>{t("common.bannerId")}</Label>
               <Input value={positionId} onChange={(e) => setPositionId(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Position</Label>
+              <Label>{t("common.position")}</Label>
               <Select value={position} onValueChange={setPosition}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select position" />
+                  <SelectValue placeholder={t("common.selectPosition")} />
                 </SelectTrigger>
                 <SelectContent>
                   {positions.map((p) => (
@@ -155,7 +156,7 @@ export default function BannersPage() {
               </Select>
             </div>
             <Button onClick={() => positionMutation.mutate()} disabled={positionMutation.isPending}>
-              Set Position
+              {t("pages.banners.setPosition")}
             </Button>
           </CardContent>
         </Card>
@@ -166,14 +167,14 @@ export default function BannersPage() {
         data={banners as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "title", header: "Title" },
-          { key: "position", header: "Position" },
+          { key: "title", header: t("common.title") },
+          { key: "position", header: t("common.position") },
           {
             key: "is_active",
-            header: "Active",
+            header: t("common.active"),
             render: (row) => (
               <Badge variant={row.is_active ? "success" : "secondary"}>
-                {row.is_active ? "Yes" : "No"}
+                {row.is_active ? t("common.yes") : t("common.no")}
               </Badge>
             ),
           },

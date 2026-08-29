@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { t } from "@/lib/i18n";
 
 export interface ConditionNode {
   logic?: string;
@@ -35,15 +36,15 @@ interface ConditionBuilderProps {
 }
 
 const OPERATORS = [
-  { value: "eq", label: "Equals" },
-  { value: "neq", label: "Not equals" },
-  { value: "gt", label: "Greater than" },
-  { value: "gte", label: "Greater or equal" },
-  { value: "lt", label: "Less than" },
-  { value: "lte", label: "Less or equal" },
-  { value: "contains", label: "Contains" },
-  { value: "is_null", label: "Is null" },
-  { value: "is_not_null", label: "Is not null" },
+  { value: "eq", labelKey: "conditionBuilder.eq" },
+  { value: "neq", labelKey: "conditionBuilder.neq" },
+  { value: "gt", labelKey: "conditionBuilder.gt" },
+  { value: "gte", labelKey: "conditionBuilder.gte" },
+  { value: "lt", labelKey: "conditionBuilder.lt" },
+  { value: "lte", labelKey: "conditionBuilder.lte" },
+  { value: "contains", labelKey: "conditionBuilder.contains" },
+  { value: "is_null", labelKey: "conditionBuilder.is_null" },
+  { value: "is_not_null", labelKey: "conditionBuilder.is_not_null" },
 ];
 
 export function ConditionBuilder({
@@ -84,7 +85,7 @@ export function ConditionBuilder({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Condition Builder</CardTitle>
+        <CardTitle className="text-base">{t("conditionBuilder.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
@@ -94,7 +95,7 @@ export function ConditionBuilder({
             variant={mode === "leaf" ? "default" : "outline"}
             onClick={() => setMode("leaf")}
           >
-            Single Rule
+            {t("conditionBuilder.singleRule")}
           </Button>
           <Button
             type="button"
@@ -107,20 +108,20 @@ export function ConditionBuilder({
               }
             }}
           >
-            Group
+            {t("conditionBuilder.group")}
           </Button>
         </div>
 
         {mode === "leaf" ? (
           <div className="grid gap-3 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Field</Label>
+              <Label>{t("common.field")}</Label>
               <Select
                 value={value.field || ""}
                 onValueChange={(v) => updateLeaf({ field: v })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Column" />
+                  <SelectValue placeholder={t("conditionBuilder.column")} />
                 </SelectTrigger>
                 <SelectContent>
                   {columns.map((col) => (
@@ -132,7 +133,7 @@ export function ConditionBuilder({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Operator</Label>
+              <Label>{t("common.operator")}</Label>
               <Select
                 value={value.operator || "eq"}
                 onValueChange={(v) => updateLeaf({ operator: v })}
@@ -143,14 +144,14 @@ export function ConditionBuilder({
                 <SelectContent>
                   {OPERATORS.map((op) => (
                     <SelectItem key={op.value} value={op.value}>
-                      {op.label}
+                      {t(op.labelKey)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Value</Label>
+              <Label>{t("common.value")}</Label>
               <Input
                 value={String(value.value ?? "")}
                 onChange={(e) => updateLeaf({ value: e.target.value })}
@@ -160,7 +161,7 @@ export function ConditionBuilder({
         ) : (
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label>Logic</Label>
+              <Label>{t("common.logic")}</Label>
               <Select
                 value={value.logic || "and"}
                 onValueChange={(v) =>
@@ -171,8 +172,8 @@ export function ConditionBuilder({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="and">AND</SelectItem>
-                  <SelectItem value="or">OR</SelectItem>
+                  <SelectItem value="and">{t("conditionBuilder.and")}</SelectItem>
+                  <SelectItem value="or">{t("conditionBuilder.or")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -186,7 +187,7 @@ export function ConditionBuilder({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Field" />
+                      <SelectValue placeholder={t("common.field")} />
                     </SelectTrigger>
                     <SelectContent>
                       {columns.map((col) => (
@@ -208,7 +209,7 @@ export function ConditionBuilder({
                     <SelectContent>
                       {OPERATORS.map((op) => (
                         <SelectItem key={op.value} value={op.value}>
-                          {op.label}
+                          {t(op.labelKey)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -226,12 +227,12 @@ export function ConditionBuilder({
                   size="sm"
                   onClick={() => removeChild(index)}
                 >
-                  Remove
+                  {t("conditionBuilder.remove")}
                 </Button>
               </div>
             ))}
             <Button type="button" variant="outline" size="sm" onClick={addChild}>
-              Add Rule
+              {t("conditionBuilder.addRule")}
             </Button>
           </div>
         )}
@@ -239,7 +240,7 @@ export function ConditionBuilder({
         {onBuild && (
           <div className="space-y-2">
             <Button type="button" onClick={onBuild}>
-              Build Condition
+              {t("conditionBuilder.buildCondition")}
             </Button>
             {buildResult && (
               <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">

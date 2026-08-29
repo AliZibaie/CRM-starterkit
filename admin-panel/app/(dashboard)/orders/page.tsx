@@ -3,6 +3,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatJalaliDateTime } from "@/lib/date";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +45,8 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Orders</h1>
-        <p className="text-muted-foreground">Order management</p>
+        <h1 className="text-2xl font-bold">{t("pages.orders.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.orders.subtitle")}</p>
       </div>
 
       <DataTable
@@ -52,22 +54,26 @@ export default function OrdersPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "id", header: "ID", className: "font-mono text-xs" },
+          { key: "id", header: t("common.id"), className: "font-mono text-xs" },
           {
             key: "status",
-            header: "Status",
+            header: t("common.status"),
             render: (row) => <Badge variant="outline">{String(row.status)}</Badge>,
           },
           {
             key: "total_amount",
-            header: "Total",
+            header: t("common.total"),
             render: (row) =>
               `${row.currency} ${((row.total_amount as number) / 100).toFixed(2)}`,
           },
-          { key: "created_at", header: "Created" },
+          {
+            key: "created_at",
+            header: t("common.createdAt"),
+            render: (row) => formatJalaliDateTime(row.created_at as string),
+          },
           {
             key: "actions",
-            header: "Actions",
+            header: t("common.actions"),
             render: (row) => (
               <div className="flex gap-2">
                 <Button
@@ -75,14 +81,14 @@ export default function OrdersPage() {
                   variant="outline"
                   onClick={() => checkoutMutation.mutate(row.id as string)}
                 >
-                  Checkout
+                  {t("common.checkout")}
                 </Button>
                 <Button
                   size="sm"
                   variant="destructive"
                   onClick={() => refundMutation.mutate(row.id as string)}
                 >
-                  Refund
+                  {t("common.refund")}
                 </Button>
               </div>
             ),

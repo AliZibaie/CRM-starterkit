@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DynamicForm, FormField } from "@/components/form-builder/dynamic-form";
@@ -15,8 +16,8 @@ interface Department {
 }
 
 const fields: FormField[] = [
-  { name: "name", label: "Name", type: "text", required: true },
-  { name: "description", label: "Description", type: "textarea" },
+  { name: "name", label: t("common.name"), type: "text", required: true },
+  { name: "description", label: t("common.description"), type: "textarea" },
 ];
 
 export default function SupportDepartmentsPage() {
@@ -47,13 +48,13 @@ export default function SupportDepartmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Support Departments</h1>
-        <p className="text-muted-foreground">Manage support departments</p>
+        <h1 className="text-2xl font-bold">{t("pages.departments.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.departments.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create Department</CardTitle>
+          <CardTitle>{t("pages.departments.createDepartment")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DynamicForm
@@ -71,8 +72,8 @@ export default function SupportDepartmentsPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "name", header: "Name" },
-          { key: "description", header: "Description" },
+          { key: "name", header: t("common.name") },
+          { key: "description", header: t("common.description") },
         ]}
       />
     </div>

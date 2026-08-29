@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/auth-store";
 import { apiClient } from "@/lib/api-client";
+import { t } from "@/lib/i18n";
 
 export function Header() {
   const router = useRouter();
@@ -31,11 +32,13 @@ export function Header() {
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-background px-6">
-      <div />
       <div className="flex items-center gap-3">
-        <div className="text-right text-sm">
-          <p className="font-medium">{user?.email || "Admin"}</p>
-          <div className="flex flex-wrap justify-end gap-1">
+        <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t("common.logout")}>
+          <LogOut className="h-4 w-4 rtl-icon-mirror" />
+        </Button>
+        <div className="text-start text-sm">
+          <p className="font-medium">{user?.email || t("common.admin")}</p>
+          <div className="flex flex-wrap gap-1">
             {roles.slice(0, 2).map((role) => (
               <Badge key={role} variant="secondary" className="text-xs">
                 {role}
@@ -43,10 +46,8 @@ export function Header() {
             ))}
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={handleLogout}>
-          <LogOut className="h-4 w-4" />
-        </Button>
       </div>
+      <div />
     </header>
   );
 }

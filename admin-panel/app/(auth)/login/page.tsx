@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,11 +43,11 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Admin Login</CardTitle>
+          <CardTitle>{t("auth.loginTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form
-            className="space-y-4"
+            className="space-y-4 text-start"
             onSubmit={(e) => {
               e.preventDefault();
               setError("");
@@ -54,22 +55,24 @@ export default function LoginPage() {
             }}
           >
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="ltr-field"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("common.password")}</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="ltr-field"
                 required
               />
             </div>
@@ -79,7 +82,7 @@ export default function LoginPage() {
               className="w-full"
               disabled={mutation.isPending}
             >
-              {mutation.isPending ? "Signing in..." : "Sign In"}
+              {mutation.isPending ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
           </form>
         </CardContent>

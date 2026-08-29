@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatJalaliDateTime } from "@/lib/date";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,25 +45,25 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">System configuration</p>
+        <h1 className="text-2xl font-bold">{t("pages.settings.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.settings.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Update Setting</CardTitle>
+          <CardTitle>{t("pages.settings.updateSetting")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <Label>Key</Label>
+            <Label>{t("common.key")}</Label>
             <Input value={key} onChange={(e) => setKey(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Value</Label>
+            <Label>{t("common.value")}</Label>
             <Input value={value} onChange={(e) => setValue(e.target.value)} />
           </div>
           <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
-            Save
+            {t("common.save")}
           </Button>
         </CardContent>
       </Card>
@@ -71,9 +73,13 @@ export default function SettingsPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="key"
         columns={[
-          { key: "key", header: "Key" },
-          { key: "value", header: "Value" },
-          { key: "updated_at", header: "Updated" },
+          { key: "key", header: t("common.key") },
+          { key: "value", header: t("common.value") },
+          {
+            key: "updated_at",
+            header: t("common.updatedAt"),
+            render: (row) => formatJalaliDateTime(row.updated_at as string),
+          },
         ]}
       />
     </div>

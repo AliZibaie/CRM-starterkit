@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,42 +40,42 @@ export default function TasksPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Tasks</h1>
-        <p className="text-muted-foreground">Create task reminders</p>
+        <h1 className="text-2xl font-bold">{t("pages.tasks.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.tasks.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create Task Reminder</CardTitle>
+          <CardTitle>{t("pages.tasks.createReminder")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Title</Label>
+              <Label>{t("common.title")}</Label>
               <Input value={title} onChange={(e) => setTitle(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Due At (RFC3339)</Label>
+              <Label>{t("common.dueAt")}</Label>
               <Input value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Entity Type</Label>
+              <Label>{t("common.entityType")}</Label>
               <Input value={entityType} onChange={(e) => setEntityType(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Entity ID</Label>
+              <Label>{t("common.entityId")}</Label>
               <Input value={entityId} onChange={(e) => setEntityId(e.target.value)} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t("common.notes")}</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
           <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-            Create Task
+            {t("pages.tasks.createTask")}
           </Button>
           {success && (
-            <p className="text-sm text-emerald-600">Task reminder created successfully.</p>
+            <p className="text-sm text-emerald-600">{t("common.taskCreatedSuccess")}</p>
           )}
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,44 +106,44 @@ export default function CronBuilderPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Cron Job Builder</h1>
-        <p className="text-muted-foreground">Visual cron job configuration</p>
+        <h1 className="text-2xl font-bold">{t("pages.cronBuilder.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.cronBuilder.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Job Configuration</CardTitle>
+          <CardTitle>{t("pages.cronBuilder.jobConfiguration")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Job Name</Label>
+              <Label>{t("common.jobName")}</Label>
               <Input value={jobName} onChange={(e) => setJobName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Cron Expression</Label>
+              <Label>{t("common.cronExpression")}</Label>
               <Input value={cronExpr} onChange={(e) => setCronExpr(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Table</Label>
+              <Label>{t("common.table")}</Label>
               <Select value={tableName} onValueChange={setTableName}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select table" />
+                  <SelectValue placeholder={t("common.selectTable")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {tables.map((t) => (
-                    <SelectItem key={t.name} value={t.name}>
-                      {t.name}
+                  {tables.map((tbl) => (
+                    <SelectItem key={tbl.name} value={tbl.name}>
+                      {tbl.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Action</Label>
+              <Label>{t("common.action")}</Label>
               <Select value={actionType} onValueChange={setActionType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select action" />
+                  <SelectValue placeholder={t("common.selectAction")} />
                 </SelectTrigger>
                 <SelectContent>
                   {actions.map((a) => (
@@ -171,7 +172,7 @@ export default function CronBuilderPage() {
         onClick={() => createMutation.mutate()}
         disabled={createMutation.isPending || !jobName || !tableName || !actionType}
       >
-        Create Cron Job
+        {t("pages.cronBuilder.create")}
       </Button>
     </div>
   );

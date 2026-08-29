@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,17 +52,17 @@ export default function ProductsPage() {
   });
 
   const fields: FormField[] = [
-    { name: "name", label: "Name", type: "text", required: true },
-    { name: "type", label: "Type", type: "text", required: true },
-    { name: "description", label: "Description", type: "textarea" },
+    { name: "name", label: t("common.name"), type: "text", required: true },
+    { name: "type", label: t("common.type"), type: "text", required: true },
+    { name: "description", label: t("common.description"), type: "textarea" },
     {
       name: "category_id",
-      label: "Category",
+      label: t("common.category"),
       type: "select",
       options: categories.map((c) => ({ label: c.name, value: c.id })),
     },
-    { name: "currency", label: "Currency", type: "text" },
-    { name: "base_price", label: "Base Price (cents)", type: "number" },
+    { name: "currency", label: t("common.currency"), type: "text" },
+    { name: "base_price", label: t("common.basePrice"), type: "number" },
   ];
 
   const createMutation = useMutation({
@@ -78,18 +79,18 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Products</h1>
-          <p className="text-muted-foreground">Catalog product management</p>
+          <h1 className="text-2xl font-bold">{t("pages.products.title")}</h1>
+          <p className="text-muted-foreground">{t("pages.products.subtitle")}</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Cancel" : "Add Product"}
+          {showForm ? t("common.cancel") : t("pages.products.addProduct")}
         </Button>
       </div>
 
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create Product</CardTitle>
+            <CardTitle>{t("pages.products.createProduct")}</CardTitle>
           </CardHeader>
           <CardContent>
             <DynamicForm
@@ -108,11 +109,11 @@ export default function ProductsPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "name", header: "Name" },
-          { key: "type", header: "Type" },
+          { key: "name", header: t("common.name") },
+          { key: "type", header: t("common.type") },
           {
             key: "base_price",
-            header: "Price",
+            header: t("common.price"),
             render: (row) =>
               `${row.currency} ${((row.base_price as number) / 100).toFixed(2)}`,
           },

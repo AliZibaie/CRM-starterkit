@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,53 +135,53 @@ export default function RolesPermissionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Roles & Permissions</h1>
-          <p className="text-muted-foreground">RBAC management</p>
+          <h1 className="text-2xl font-bold">{t("pages.roles.title")}</h1>
+          <p className="text-muted-foreground">{t("pages.roles.subtitle")}</p>
         </div>
         <Button
           variant="outline"
           onClick={() => syncPerms.mutate()}
           disabled={syncPerms.isPending}
         >
-          Sync Permissions
+          {t("pages.roles.syncPermissions")}
         </Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Create Role</CardTitle>
+            <CardTitle>{t("pages.roles.createRole")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{t("common.name")}</Label>
               <Input value={roleName} onChange={(e) => setRoleName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>{t("common.description")}</Label>
               <Input value={roleDesc} onChange={(e) => setRoleDesc(e.target.value)} />
             </div>
             <Button onClick={() => createRole.mutate()} disabled={createRole.isPending}>
-              Create Role
+              {t("pages.roles.createRole")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Create Permission</CardTitle>
+            <CardTitle>{t("pages.roles.createPermission")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>Key</Label>
+              <Label>{t("common.key")}</Label>
               <Input value={permKey} onChange={(e) => setPermKey(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{t("common.name")}</Label>
               <Input value={permName} onChange={(e) => setPermName(e.target.value)} />
             </div>
             <Button onClick={() => createPerm.mutate()} disabled={createPerm.isPending}>
-              Create Permission
+              {t("pages.roles.createPermission")}
             </Button>
           </CardContent>
         </Card>
@@ -189,12 +190,12 @@ export default function RolesPermissionsPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Assign Permission to Role</CardTitle>
+            <CardTitle>{t("pages.roles.assignPermissions")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger>
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder={t("common.selectRole")} />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((r) => (
@@ -206,7 +207,7 @@ export default function RolesPermissionsPage() {
             </Select>
             <Select value={selectedPerm} onValueChange={setSelectedPerm}>
               <SelectTrigger>
-                <SelectValue placeholder="Select permission" />
+                <SelectValue placeholder={t("common.selectPermission")} />
               </SelectTrigger>
               <SelectContent>
                 {permissions.map((p) => (
@@ -217,18 +218,18 @@ export default function RolesPermissionsPage() {
               </SelectContent>
             </Select>
             <Button onClick={() => assignPerm.mutate()} disabled={assignPerm.isPending}>
-              Assign
+              {t("common.assign")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Assign Role to User</CardTitle>
+            <CardTitle>{t("pages.roles.assignRoleToUser")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <Label>User ID</Label>
+              <Label>{t("common.userId")}</Label>
               <Input
                 value={assignUserId}
                 onChange={(e) => setAssignUserId(e.target.value)}
@@ -236,7 +237,7 @@ export default function RolesPermissionsPage() {
             </div>
             <Select value={assignRoleId} onValueChange={setAssignRoleId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder={t("common.selectRole")} />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((r) => (
@@ -247,7 +248,7 @@ export default function RolesPermissionsPage() {
               </SelectContent>
             </Select>
             <Button onClick={() => assignRole.mutate()} disabled={assignRole.isPending}>
-              Assign Role
+              {t("pages.roles.assignRole")}
             </Button>
           </CardContent>
         </Card>
@@ -255,12 +256,12 @@ export default function RolesPermissionsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Role Detail</CardTitle>
+          <CardTitle>{t("pages.roles.roleDetail")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Select value={viewRoleId} onValueChange={setViewRoleId}>
             <SelectTrigger className="max-w-md">
-              <SelectValue placeholder="Select role to view permissions" />
+              <SelectValue placeholder={t("common.selectRoleToView")} />
             </SelectTrigger>
             <SelectContent>
               {roles.map((r) => (
@@ -287,7 +288,7 @@ export default function RolesPermissionsPage() {
                 ))}
                 {rolePermissions.length === 0 && (
                   <span className="text-sm text-muted-foreground">
-                    No permissions assigned
+                    {t("common.noPermissions")}
                   </span>
                 )}
               </div>
@@ -298,14 +299,14 @@ export default function RolesPermissionsPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div>
-          <h2 className="mb-3 text-lg font-semibold">Roles</h2>
+          <h2 className="mb-3 text-lg font-semibold">{t("pages.roles.rolesList")}</h2>
           <DataTable
             loading={rolesLoading}
             data={roles as unknown as Record<string, unknown>[]}
             keyField="id"
             columns={[
-              { key: "name", header: "Name" },
-              { key: "description", header: "Description" },
+              { key: "name", header: t("common.name") },
+              { key: "description", header: t("common.description") },
               {
                 key: "view",
                 header: "",
@@ -315,7 +316,7 @@ export default function RolesPermissionsPage() {
                     variant="ghost"
                     onClick={() => setViewRoleId(row.id as string)}
                   >
-                    View
+                    {t("common.view")}
                   </Button>
                 ),
               },
@@ -323,15 +324,15 @@ export default function RolesPermissionsPage() {
           />
         </div>
         <div>
-          <h2 className="mb-3 text-lg font-semibold">Permissions</h2>
+          <h2 className="mb-3 text-lg font-semibold">{t("pages.roles.permissionsList")}</h2>
           <DataTable
             loading={permsLoading}
             data={permissions as unknown as Record<string, unknown>[]}
             keyField="id"
             columns={[
-              { key: "key", header: "Key" },
-              { key: "name", header: "Name" },
-              { key: "module", header: "Module" },
+              { key: "key", header: t("common.key") },
+              { key: "name", header: t("common.name") },
+              { key: "module", header: t("common.module") },
             ]}
           />
         </div>

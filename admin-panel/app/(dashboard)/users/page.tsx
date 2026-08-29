@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatJalaliDateTime } from "@/lib/date";
 import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +22,10 @@ interface User {
 }
 
 const createFields: FormField[] = [
-  { name: "email", label: "Email", type: "email", required: true },
-  { name: "password", label: "Password", type: "password", required: true },
-  { name: "first_name", label: "First Name", type: "text" },
-  { name: "last_name", label: "Last Name", type: "text" },
+  { name: "email", label: t("common.email"), type: "email", required: true },
+  { name: "password", label: t("common.password"), type: "password", required: true },
+  { name: "first_name", label: t("common.firstName"), type: "text" },
+  { name: "last_name", label: t("common.lastName"), type: "text" },
 ];
 
 export default function UsersPage() {
@@ -85,18 +87,18 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Users</h1>
-          <p className="text-muted-foreground">Manage system users</p>
+          <h1 className="text-2xl font-bold">{t("pages.users.title")}</h1>
+          <p className="text-muted-foreground">{t("pages.users.subtitle")}</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Cancel" : "Add User"}
+          {showForm ? t("common.cancel") : t("pages.users.addUser")}
         </Button>
       </div>
 
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create User</CardTitle>
+            <CardTitle>{t("pages.users.create")}</CardTitle>
           </CardHeader>
           <CardContent>
             <DynamicForm
@@ -104,7 +106,7 @@ export default function UsersPage() {
               values={formValues}
               onChange={(n, v) => setFormValues((p) => ({ ...p, [n]: v }))}
               onSubmit={() => createMutation.mutate(formValues)}
-              submitLabel="Create"
+              submitLabel={t("common.create")}
               loading={createMutation.isPending}
             />
           </CardContent>
@@ -116,25 +118,30 @@ export default function UsersPage() {
         data={(data?.users ?? []) as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "email", header: "Email" },
+          { key: "email", header: t("common.email") },
           {
             key: "name",
-            header: "Name",
+            header: t("pages.users.fullName"),
             render: (row) =>
               `${row.first_name as string} ${row.last_name as string}`,
           },
           {
             key: "is_active",
-            header: "Status",
+            header: t("common.status"),
             render: (row) => (
               <Badge variant={row.is_active ? "success" : "secondary"}>
-                {row.is_active ? "Active" : "Inactive"}
+                {row.is_active ? t("common.active") : t("common.inactive")}
               </Badge>
             ),
           },
           {
+            key: "created_at",
+            header: t("common.createdAt"),
+            render: (row) => formatJalaliDateTime(row.created_at as string),
+          },
+          {
             key: "actions",
-            header: "Actions",
+            header: t("common.actions"),
             render: (row) => (
               <div className="flex gap-2">
                 <Button
@@ -150,14 +157,14 @@ export default function UsersPage() {
                     });
                   }}
                 >
-                  Edit
+                  {t("common.edit")}
                 </Button>
                 <Button
                   size="sm"
                   variant="destructive"
                   onClick={() => deleteMutation.mutate(row.id as string)}
                 >
-                  Delete
+                  {t("common.delete")}
                 </Button>
               </div>
             ),
@@ -168,22 +175,22 @@ export default function UsersPage() {
       {editId && (
         <Card>
           <CardHeader>
-            <CardTitle>Edit User</CardTitle>
+            <CardTitle>{t("pages.users.editUser")}</CardTitle>
           </CardHeader>
           <CardContent>
             <DynamicForm
               fields={[
-                { name: "email", label: "Email", type: "email" },
-                { name: "first_name", label: "First Name", type: "text" },
-                { name: "last_name", label: "Last Name", type: "text" },
-                { name: "is_active", label: "Active", type: "checkbox" },
+                { name: "email", label: t("common.email"), type: "email" },
+                { name: "first_name", label: t("common.firstName"), type: "text" },
+                { name: "last_name", label: t("common.lastName"), type: "text" },
+                { name: "is_active", label: t("common.active"), type: "checkbox" },
               ]}
               values={editValues}
               onChange={(n, v) => setEditValues((p) => ({ ...p, [n]: v }))}
               onSubmit={() =>
                 updateMutation.mutate({ id: editId, payload: editValues })
               }
-              submitLabel="Save"
+              submitLabel={t("common.save")}
               loading={updateMutation.isPending}
             />
             <Button
@@ -191,7 +198,7 @@ export default function UsersPage() {
               className="mt-2"
               onClick={() => setEditId(null)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
           </CardContent>
         </Card>

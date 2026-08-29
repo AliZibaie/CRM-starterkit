@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { DataTable } from "@/components/table/data-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DynamicForm, FormField } from "@/components/form-builder/dynamic-form";
@@ -15,8 +16,8 @@ interface Category {
 }
 
 const fields: FormField[] = [
-  { name: "name", label: "Name", type: "text", required: true },
-  { name: "parent_id", label: "Parent ID", type: "text" },
+  { name: "name", label: t("common.name"), type: "text", required: true },
+  { name: "parent_id", label: t("common.parentId"), type: "text" },
 ];
 
 export default function CategoriesPage() {
@@ -47,13 +48,13 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Categories</h1>
-        <p className="text-muted-foreground">Product categories</p>
+        <h1 className="text-2xl font-bold">{t("pages.categories.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.categories.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create Category</CardTitle>
+          <CardTitle>{t("pages.categories.createCategory")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DynamicForm
@@ -71,8 +72,8 @@ export default function CategoriesPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "name", header: "Name" },
-          { key: "parent_id", header: "Parent ID" },
+          { key: "name", header: t("common.name") },
+          { key: "parent_id", header: t("common.parentId") },
         ]}
       />
     </div>

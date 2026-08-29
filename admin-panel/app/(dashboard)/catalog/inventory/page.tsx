@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,18 +81,18 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Inventory</h1>
-        <p className="text-muted-foreground">Manage variant stock levels</p>
+        <h1 className="text-2xl font-bold">{t("pages.inventory.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.inventory.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Update Inventory</CardTitle>
+          <CardTitle>{t("pages.inventory.updateInventory")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Product</Label>
+              <Label>{t("common.product")}</Label>
               <Select
                 value={selectedProduct}
                 onValueChange={(v) => {
@@ -100,7 +101,7 @@ export default function InventoryPage() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select product" />
+                  <SelectValue placeholder={t("common.selectProduct")} />
                 </SelectTrigger>
                 <SelectContent>
                   {products.map((p) => (
@@ -112,10 +113,10 @@ export default function InventoryPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Variant</Label>
+              <Label>{t("common.variant")}</Label>
               <Select value={selectedVariant} onValueChange={setSelectedVariant}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select variant" />
+                  <SelectValue placeholder={t("common.selectVariant")} />
                 </SelectTrigger>
                 <SelectContent>
                   {variants.map((v) => (
@@ -130,12 +131,15 @@ export default function InventoryPage() {
 
           {inventory && (
             <p className="text-sm text-muted-foreground">
-              Current: {inventory.quantity} (reserved: {inventory.reserved})
+              {t("common.currentStock", {
+                quantity: inventory.quantity,
+                reserved: inventory.reserved,
+              })}
             </p>
           )}
 
           <div className="space-y-2">
-            <Label>Quantity</Label>
+            <Label>{t("common.quantity")}</Label>
             <Input
               type="number"
               value={quantity}
@@ -147,7 +151,7 @@ export default function InventoryPage() {
             onClick={() => updateMutation.mutate()}
             disabled={updateMutation.isPending || !selectedVariant}
           >
-            Update Stock
+            {t("common.updateStock")}
           </Button>
         </CardContent>
       </Card>

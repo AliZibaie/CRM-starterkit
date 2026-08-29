@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface RequestStats {
@@ -53,19 +54,19 @@ export default function DashboardPage() {
 
   const cards = [
     {
-      title: "Users",
+      title: t("pages.dashboard.users"),
       value: usersLoading ? "..." : String(usersMeta?.total ?? 0),
     },
     {
-      title: "Orders",
+      title: t("pages.dashboard.orders"),
       value: ordersLoading ? "..." : String(orders.length),
     },
     {
-      title: "Support Tickets",
+      title: t("pages.dashboard.tickets"),
       value: ticketsLoading ? "..." : String(tickets.length),
     },
     {
-      title: "Total Requests",
+      title: t("pages.dashboard.requests"),
       value: statsLoading ? "..." : String(stats?.total ?? 0),
     },
   ];
@@ -73,8 +74,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">System overview and metrics</p>
+        <h1 className="text-2xl font-bold">{t("pages.dashboard.title")}</h1>
+        <p className="text-muted-foreground">{t("pages.dashboard.subtitle")}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -23,66 +23,67 @@ import {
   Percent,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 const navGroups = [
   {
-    label: "Overview",
+    labelKey: "nav.overview",
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/request-monitor", label: "Request Monitor", icon: Activity },
-      { href: "/audit-log", label: "Audit Log", icon: ScrollText },
+      { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+      { href: "/request-monitor", labelKey: "nav.requestMonitor", icon: Activity },
+      { href: "/audit-log", labelKey: "nav.auditLog", icon: ScrollText },
     ],
   },
   {
-    label: "Administration",
+    labelKey: "nav.administration",
     items: [
-      { href: "/users", label: "Users", icon: Users },
-      { href: "/roles-permissions", label: "Roles & Permissions", icon: Shield },
-      { href: "/settings", label: "Settings", icon: Settings },
+      { href: "/users", labelKey: "nav.users", icon: Users },
+      { href: "/roles-permissions", labelKey: "nav.rolesPermissions", icon: Shield },
+      { href: "/settings", labelKey: "nav.settings", icon: Settings },
     ],
   },
   {
-    label: "Automation",
+    labelKey: "nav.automation",
     items: [
-      { href: "/cron-jobs/builder", label: "Cron Builder", icon: Clock },
-      { href: "/cron-jobs/logs", label: "Cron Logs", icon: Clock },
+      { href: "/cron-jobs/builder", labelKey: "nav.cronBuilder", icon: Clock },
+      { href: "/cron-jobs/logs", labelKey: "nav.cronLogs", icon: Clock },
     ],
   },
   {
-    label: "Content",
+    labelKey: "nav.content",
     items: [
-      { href: "/announcements", label: "Announcements", icon: Megaphone },
-      { href: "/banners", label: "Banners", icon: Image },
-      { href: "/cms/pages", label: "CMS Pages", icon: FileText },
-      { href: "/cms/menus", label: "CMS Menus", icon: FileText },
-      { href: "/media-library", label: "Media Library", icon: FolderOpen },
+      { href: "/announcements", labelKey: "nav.announcements", icon: Megaphone },
+      { href: "/banners", labelKey: "nav.banners", icon: Image },
+      { href: "/cms/pages", labelKey: "nav.cmsPages", icon: FileText },
+      { href: "/cms/menus", labelKey: "nav.cmsMenus", icon: FileText },
+      { href: "/media-library", labelKey: "nav.mediaLibrary", icon: FolderOpen },
     ],
   },
   {
-    label: "Support",
+    labelKey: "nav.support",
     items: [
-      { href: "/support/tickets", label: "Tickets", icon: Headphones },
-      { href: "/support/departments", label: "Departments", icon: Headphones },
+      { href: "/support/tickets", labelKey: "nav.tickets", icon: Headphones },
+      { href: "/support/departments", labelKey: "nav.departments", icon: Headphones },
     ],
   },
   {
-    label: "Commerce",
+    labelKey: "nav.commerce",
     items: [
-      { href: "/catalog/products", label: "Products", icon: Package },
-      { href: "/catalog/categories", label: "Categories", icon: Package },
-      { href: "/catalog/inventory", label: "Inventory", icon: Package },
-      { href: "/orders", label: "Orders", icon: ShoppingCart },
-      { href: "/payments/gateways-status", label: "Payment Gateways", icon: CreditCard },
-      { href: "/discounts", label: "Discounts", icon: Percent },
+      { href: "/catalog/products", labelKey: "nav.products", icon: Package },
+      { href: "/catalog/categories", labelKey: "nav.categories", icon: Package },
+      { href: "/catalog/inventory", labelKey: "nav.inventory", icon: Package },
+      { href: "/orders", labelKey: "nav.orders", icon: ShoppingCart },
+      { href: "/payments/gateways-status", labelKey: "nav.paymentGateways", icon: CreditCard },
+      { href: "/discounts", labelKey: "nav.discounts", icon: Percent },
     ],
   },
   {
-    label: "CRM",
+    labelKey: "nav.crm",
     items: [
-      { href: "/crm/leads", label: "Leads", icon: Contact },
-      { href: "/crm/pipeline", label: "Pipeline", icon: Contact },
-      { href: "/crm/contacts", label: "Contacts", icon: Contact },
-      { href: "/crm/tasks", label: "Tasks", icon: Tag },
+      { href: "/crm/leads", labelKey: "nav.leads", icon: Contact },
+      { href: "/crm/pipeline", labelKey: "nav.pipeline", icon: Contact },
+      { href: "/crm/contacts", labelKey: "nav.contacts", icon: Contact },
+      { href: "/crm/tasks", labelKey: "nav.tasks", icon: Tag },
     ],
   },
 ];
@@ -91,15 +92,15 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
+    <aside className="flex h-full w-64 shrink-0 flex-col border-s border-border bg-sidebar text-sidebar-foreground">
       <div className="border-b border-border px-4 py-5">
-        <span className="text-lg font-bold tracking-tight">CRM Admin</span>
+        <span className="text-lg font-bold tracking-tight">{t("brand")}</span>
       </div>
       <nav className="flex-1 overflow-y-auto p-3">
         {navGroups.map((group) => (
-          <div key={group.label} className="mb-4">
-            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {group.label}
+          <div key={group.labelKey} className="mb-4">
+            <p className="mb-2 px-2 text-xs font-semibold tracking-wider text-muted-foreground">
+              {t(group.labelKey)}
             </p>
             <ul className="space-y-1">
               {group.items.map((item) => {
@@ -113,12 +114,12 @@ export function Sidebar() {
                       className={cn(
                         "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors",
                         active
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
                           : "hover:bg-sidebar-accent/50"
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   </li>
                 );
