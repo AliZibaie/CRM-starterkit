@@ -27,7 +27,10 @@ func NewHandler(service *usecase.Service) *Handler { return &Handler{service: se
 // @Router /api/v1/crm/leads [post]
 func (h *Handler) CreateLead(c *fiber.Ctx) error {
 	var req struct {
-		Name, Email, Phone, Source string
+		Name   string `json:"name"`
+		Email  string `json:"email"`
+		Phone  string `json:"phone"`
+		Source string `json:"source"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
@@ -95,8 +98,11 @@ func (h *Handler) ListContacts(c *fiber.Ctx) error {
 // @Router /api/v1/crm/deals [post]
 func (h *Handler) CreateDeal(c *fiber.Ctx) error {
 	var req struct {
-		Title, ContactID, PipelineID, Stage string
-		Amount                              int64
+		Title      string `json:"title"`
+		ContactID  string `json:"contact_id"`
+		PipelineID string `json:"pipeline_id"`
+		Stage      string `json:"stage"`
+		Amount     int64  `json:"amount"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
@@ -144,7 +150,9 @@ func (h *Handler) MoveDealStage(c *fiber.Ctx) error {
 // @Router /api/v1/crm/assign-owner [post]
 func (h *Handler) AssignOwner(c *fiber.Ctx) error {
 	var req struct {
-		EntityType, EntityID, OwnerID string
+		EntityType string `json:"entity_type"`
+		EntityID   string `json:"entity_id"`
+		OwnerID    string `json:"owner_id"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
@@ -165,7 +173,10 @@ func (h *Handler) AssignOwner(c *fiber.Ctx) error {
 // @Router /api/v1/crm/activities [post]
 func (h *Handler) LogActivity(c *fiber.Ctx) error {
 	var req struct {
-		EntityType, EntityID, Type, Body string
+		EntityType string `json:"entity_type"`
+		EntityID   string `json:"entity_id"`
+		Type       string `json:"type"`
+		Body       string `json:"body"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
@@ -187,15 +198,27 @@ func (h *Handler) LogActivity(c *fiber.Ctx) error {
 // @Router /api/v1/crm/tasks/reminders [post]
 func (h *Handler) CreateTaskReminder(c *fiber.Ctx) error {
 	var req struct {
-		Title, EntityType, EntityID string
-		DueAt, ReminderAt           *time.Time
+		Title      string     `json:"title"`
+		EntityType string     `json:"entity_type"`
+		EntityID   string     `json:"entity_id"`
+		DueAt      *time.Time `json:"due_at"`
+		ReminderAt *time.Time `json:"reminder_at"`
+		Notes      string     `json:"notes"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
 	}
-	task, err := h.service.CreateTaskReminder(c.Context(), req.Title, req.EntityType, req.EntityID, middleware.UserIDFromContext(c), req.DueAt, req.ReminderAt)
+	reminderAt := req.ReminderAt
+	if reminderAt == nil {
+		reminderAt = req.DueAt
+	}
+	actorID := middleware.UserIDFromContext(c)
+	task, err := h.service.CreateTaskReminder(c.Context(), req.Title, req.EntityType, req.EntityID, actorID, req.DueAt, reminderAt)
 	if err != nil {
 		return mapErr(c, err)
+	}
+	if req.Notes != "" && req.EntityType != "" && req.EntityID != "" {
+		_ = h.service.LogActivity(c.Context(), req.EntityType, req.EntityID, "note", req.Notes, actorID)
 	}
 	return response.Created(c, task)
 }
@@ -225,7 +248,10 @@ func (h *Handler) Customer360(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/v1/crm/pipelines [post]
 func (h *Handler) UpsertPipeline(c *fiber.Ctx) error {
-	var req struct{ Name, StagesJSON string }
+	var req struct {
+		Name       string `json:"name"`
+		StagesJSON string `json:"stages_json"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
 	}
@@ -259,7 +285,9 @@ func (h *Handler) ListPipelines(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/v1/crm/tags [post]
 func (h *Handler) UpsertTag(c *fiber.Ctx) error {
-	var req struct{ Name string }
+	var req struct {
+		Name string `json:"name"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
 	}
@@ -279,7 +307,11 @@ func (h *Handler) UpsertTag(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/v1/crm/tags/attach [post]
 func (h *Handler) AttachTag(c *fiber.Ctx) error {
-	var req struct{ EntityType, EntityID, TagID string }
+	var req struct {
+		EntityType string `json:"entity_type"`
+		EntityID   string `json:"entity_id"`
+		TagID      string `json:"tag_id"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
 	}
@@ -298,7 +330,10 @@ func (h *Handler) AttachTag(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/v1/crm/segments [post]
 func (h *Handler) UpsertSegment(c *fiber.Ctx) error {
-	var req struct{ Name, RulesJSON string }
+	var req struct {
+		Name      string `json:"name"`
+		RulesJSON string `json:"rules_json"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
 	}
@@ -323,14 +358,76 @@ func (h *Handler) ListSegments(c *fiber.Ctx) error {
 	return response.OK(c, items)
 }
 
+func (h *Handler) ListDeals(c *fiber.Ctx) error {
+	items, err := h.service.ListDealsByPipeline(c.Context(), c.Query("pipeline_id"))
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, items)
+}
+
+func (h *Handler) CreateContact(c *fiber.Ctx) error {
+	var req struct {
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Phone   string `json:"phone"`
+		Company string `json:"company"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	contact, err := h.service.CreateContact(c.Context(), req.Name, req.Email, req.Phone, req.Company, middleware.UserIDFromContext(c))
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.Created(c, contact)
+}
+
+func (h *Handler) UpdateContact(c *fiber.Ctx) error {
+	var req struct {
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Phone   string `json:"phone"`
+		Company string `json:"company"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	contact, err := h.service.UpdateContact(c.Context(), c.Params("id"), req.Name, req.Email, req.Phone, req.Company)
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, contact)
+}
+
+func (h *Handler) DeleteContact(c *fiber.Ctx) error {
+	if err := h.service.DeleteContact(c.Context(), c.Params("id")); err != nil {
+		return mapErr(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "contact deleted", nil)
+}
+
+func (h *Handler) ListActivities(c *fiber.Ctx) error {
+	items, err := h.service.ListActivities(c.Context(), c.Query("entity_type"), c.Query("entity_id"))
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, items)
+}
+
 func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g := router.Group("/crm", middleware.Auth(jwt))
 	g.Post("/leads", middleware.RequireAnyPermission("crm.lead"), h.CreateLead)
 	g.Get("/leads", middleware.RequireAnyPermission("crm.lead"), h.ListLeads)
 	g.Post("/leads/:id/convert", middleware.RequireAnyPermission("crm.lead"), h.ConvertLead)
 	g.Get("/contacts", middleware.RequireAnyPermission("crm.contact"), h.ListContacts)
+	g.Post("/contacts", middleware.RequireAnyPermission("crm.contact"), h.CreateContact)
+	g.Put("/contacts/:id", middleware.RequireAnyPermission("crm.contact"), h.UpdateContact)
+	g.Delete("/contacts/:id", middleware.RequireAnyPermission("crm.contact"), h.DeleteContact)
+	g.Get("/deals", middleware.RequireAnyPermission("crm.deal"), h.ListDeals)
 	g.Post("/deals", middleware.RequireAnyPermission("crm.deal"), h.CreateDeal)
 	g.Post("/deals/:id/stage", middleware.RequireAnyPermission("crm.deal"), h.MoveDealStage)
+	g.Get("/activities", middleware.RequireAnyPermission("crm.manage"), h.ListActivities)
 	g.Post("/assign-owner", middleware.RequireAnyPermission("crm.manage"), h.AssignOwner)
 	g.Post("/activities", middleware.RequireAnyPermission("crm.manage"), h.LogActivity)
 	g.Post("/tasks/reminders", middleware.RequireAnyPermission("crm.task"), h.CreateTaskReminder)

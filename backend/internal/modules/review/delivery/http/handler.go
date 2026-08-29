@@ -2,6 +2,7 @@ package httpdelivery
 
 import (
 	"errors"
+	"strconv"
 
 	"crm-starterkit/internal/core/http/middleware"
 	"crm-starterkit/internal/core/http/response"
@@ -71,9 +72,46 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 	return response.Message(c, fiber.StatusOK, "deleted", nil)
 }
 
+func (h *Handler) ListAll(c *fiber.Ctx) error {
+	var rating *int
+	if v := c.Query("rating"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			rating = &n
+		}
+	}
+	items, err := h.service.ListAll(c.Context(), c.Query("item_id"), rating, 100)
+	if err != nil {
+		return response.Internal(c, err.Error())
+	}
+	return response.OK(c, items)
+}
+
+func (h *Handler) SetVisibility(c *fiber.Ctx) error {
+	var req struct {
+		IsVisible bool `json:"is_visible"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	if err := h.service.SetVisibility(c.Context(), c.Params("id"), req.IsVisible); err != nil {
+		return response.Internal(c, err.Error())
+	}
+	return response.Message(c, fiber.StatusOK, "updated", nil)
+}
+
+func (h *Handler) AdminDelete(c *fiber.Ctx) error {
+	if err := h.service.AdminDelete(c.Context(), c.Params("id")); err != nil {
+		return response.Internal(c, err.Error())
+	}
+	return response.Message(c, fiber.StatusOK, "deleted", nil)
+}
+
 func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	router.Get("/reviews/items/:item_id", h.ListByItem)
 	g := router.Group("/reviews", middleware.Auth(jwt))
+	g.Get("/admin", middleware.RequireAnyPermission("review.moderate"), h.ListAll)
 	g.Post("/", middleware.RequireAnyPermission("review.create"), h.Create)
+	g.Put("/:id/visibility", middleware.RequireAnyPermission("review.moderate"), h.SetVisibility)
+	g.Delete("/:id/admin", middleware.RequireAnyPermission("review.moderate"), h.AdminDelete)
 	g.Delete("/:id", middleware.RequireAnyPermission("review.create"), h.Delete)
 }

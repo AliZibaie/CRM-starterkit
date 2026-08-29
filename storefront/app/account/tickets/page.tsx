@@ -5,6 +5,9 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t, statusLabel } from "@/lib/i18n";
+import { formatJalaliDateTime } from "@/lib/date";
+import { DataTable } from "@/components/table/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,19 +86,19 @@ export default function TicketsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Support Tickets</h1>
-          <p className="text-muted-foreground">Get help from our team</p>
+          <h1 className="text-3xl font-bold">{t("tickets.title")}</h1>
+          <p className="text-muted-foreground">{t("tickets.subtitle")}</p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/account/orders">Back to Orders</Link>
+          <Link href="/account/orders">{t("tickets.backOrders")}</Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create Ticket</CardTitle>
+          <CardTitle>{t("tickets.create")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form
@@ -106,7 +109,7 @@ export default function TicketsPage() {
             }}
           >
             <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
+              <Label htmlFor="subject">{t("tickets.subject")}</Label>
               <Input
                 id="subject"
                 value={subject}
@@ -115,68 +118,78 @@ export default function TicketsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority">{t("tickets.priority")}</Label>
               <select
                 id="priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
               >
-                <option value="low">Low</option>
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="low">{t("tickets.priorityLow")}</option>
+                <option value="normal">{t("tickets.priorityNormal")}</option>
+                <option value="high">{t("tickets.priorityHigh")}</option>
+                <option value="urgent">{t("tickets.priorityUrgent")}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="department">Department ID</Label>
+              <Label htmlFor="department">{t("tickets.department")}</Label>
               <Input
                 id="department"
                 value={departmentId}
                 onChange={(e) => setDepartmentId(e.target.value)}
-                placeholder="Optional"
+                placeholder={t("common.optional")}
+                className="ltr-field"
               />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" disabled={createTicket.isPending}>
-              {createTicket.isPending ? "Creating..." : "Create Ticket"}
+              {createTicket.isPending ? t("tickets.creating") : t("tickets.createBtn")}
             </Button>
           </form>
         </CardContent>
       </Card>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Your Tickets</h2>
+        <h2 className="text-xl font-semibold">{t("tickets.yourTickets")}</h2>
         {isLoading ? (
-          <p className="text-muted-foreground">Loading tickets...</p>
-        ) : tickets.length === 0 ? (
-          <p className="text-muted-foreground">No tickets yet.</p>
+          <p className="text-muted-foreground">{t("tickets.loading")}</p>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="space-y-2">
-              {tickets.map((ticket) => (
-                <Card
-                  key={ticket.id}
-                  className={`cursor-pointer transition-colors ${
-                    selectedId === ticket.id ? "border-primary" : ""
-                  }`}
-                  onClick={() => setSelectedId(ticket.id)}
-                >
-                  <CardContent className="py-4">
-                    <p className="font-medium">{ticket.subject}</p>
-                    <div className="mt-1 flex gap-2 text-xs text-muted-foreground">
-                      <span className="capitalize">{ticket.status}</span>
-                      <span>·</span>
-                      <span className="capitalize">{ticket.priority}</span>
-                      <span>·</span>
-                      <span>
-                        {new Date(ticket.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+          <>
+            <DataTable
+              rows={tickets}
+              rowKey={(tk) => tk.id}
+              emptyMessage={t("tickets.empty")}
+              columns={[
+                {
+                  key: "subject",
+                  header: t("tickets.subject"),
+                  cell: (tk) => (
+                    <button
+                      type="button"
+                      className="text-start font-medium hover:text-primary"
+                      onClick={() => setSelectedId(tk.id)}
+                    >
+                      {tk.subject}
+                    </button>
+                  ),
+                },
+                {
+                  key: "status",
+                  header: t("orders.status"),
+                  cell: (tk) => statusLabel(tk.status),
+                },
+                {
+                  key: "priority",
+                  header: t("tickets.priority"),
+                  cell: (tk) => statusLabel(tk.priority),
+                },
+                {
+                  key: "date",
+                  header: t("orders.date"),
+                  cell: (tk) => formatJalaliDateTime(tk.created_at),
+                },
+              ]}
+            />
             {selectedId && ticketDetail && (
               <Card>
                 <CardHeader>
@@ -187,11 +200,11 @@ export default function TicketsPage() {
                     {ticketDetail.messages?.map((msg) => (
                       <div
                         key={msg.id}
-                        className="rounded-md border p-3 text-sm"
+                        className="rounded-md border border-border p-3 text-sm"
                       >
-                        <p>{msg.body}</p>
+                        <p className="leading-7">{msg.body}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {new Date(msg.created_at).toLocaleString()}
+                          {formatJalaliDateTime(msg.created_at)}
                         </p>
                       </div>
                     ))}
@@ -203,7 +216,7 @@ export default function TicketsPage() {
                       replyTicket.mutate();
                     }}
                   >
-                    <Label htmlFor="reply">Reply</Label>
+                    <Label htmlFor="reply">{t("tickets.reply")}</Label>
                     <textarea
                       id="reply"
                       value={replyBody}
@@ -213,13 +226,15 @@ export default function TicketsPage() {
                       className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                     />
                     <Button type="submit" disabled={replyTicket.isPending}>
-                      {replyTicket.isPending ? "Sending..." : "Send Reply"}
+                      {replyTicket.isPending
+                        ? t("tickets.sending")
+                        : t("tickets.sendReply")}
                     </Button>
                   </form>
                 </CardContent>
               </Card>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>

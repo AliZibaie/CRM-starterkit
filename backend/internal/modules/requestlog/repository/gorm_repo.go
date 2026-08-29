@@ -99,6 +99,10 @@ func (s *Store) Stats(ctx context.Context, f domain.ListFilter) (*domain.Stats, 
 	if err := s.applyFilter(s.db.WithContext(ctx).Model(&Model{}), f).Where("suspicious = ?", true).Count(&suspicious).Error; err != nil {
 		return nil, err
 	}
+	var avgDuration float64
+	_ = s.applyFilter(s.db.WithContext(ctx).Model(&Model{}), f).Select("COALESCE(AVG(duration_ms),0)").Scan(&avgDuration)
+	var errorCount int64
+	_ = s.applyFilter(s.db.WithContext(ctx).Model(&Model{}), f).Where("status >= ?", 400).Count(&errorCount)
 	type rowCount struct {
 		Key   string
 		Count int64
@@ -118,5 +122,8 @@ func (s *Store) Stats(ctx context.Context, f domain.ListFilter) (*domain.Stats, 
 	for _, r := range countryRows {
 		byCountry[r.Key] = r.Count
 	}
-	return &domain.Stats{Total: total, Suspicious: suspicious, ByStatus: byStatus, ByCountry: byCountry}, nil
+	return &domain.Stats{
+		Total: total, Suspicious: suspicious, AvgDurationMs: int64(avgDuration), ErrorCount: errorCount,
+		ByStatus: byStatus, ByCountry: byCountry,
+	}, nil
 }

@@ -1,0 +1,134 @@
+{
+  "brand": "فروشگاه",
+  "nav": {
+    "categories": "دسته‌بندی‌ها",
+    "cart": "سبد خرید",
+    "account": "حساب کاربری",
+    "orders": "سفارش‌ها",
+    "support": "پشتیبانی",
+    "licenses": "لایسنس‌ها",
+    "login": "ورود",
+    "logout": "خروج"
+  },
+  "common": {
+    "loading": "در حال بارگذاری...",
+    "notFound": "موردی یافت نشد.",
+    "error": "خطایی رخ داد.",
+    "optional": "اختیاری",
+    "back": "بازگشت",
+    "remove": "حذف",
+    "continueShopping": "ادامه خرید",
+    "browseProducts": "مشاهده محصولات"
+  },
+  "home": {
+    "allProducts": "همه محصولات"
+  },
+  "category": {
+    "title": "دسته‌بندی",
+    "empty": "محصولی در این دسته‌بندی وجود ندارد.",
+    "filter": "فیلترها",
+    "sort": "مرتب‌سازی",
+    "sortNewest": "جدیدترین",
+    "sortPriceAsc": "ارزان‌ترین",
+    "sortPriceDesc": "گران‌ترین"
+  },
+  "product": {
+    "loading": "در حال بارگذاری محصول...",
+    "notFound": "محصول یافت نشد.",
+    "variants": "گونه‌ها",
+    "details": "مشخصات",
+    "addToCart": "افزودن به سبد",
+    "adding": "در حال افزودن...",
+    "description": "توضیحات",
+    "reviews": "نظرات",
+    "noReviews": "هنوز نظری ثبت نشده است."
+  },
+  "cart": {
+    "title": "سبد خرید",
+    "loading": "در حال بارگذاری سبد...",
+    "empty": "سبد خرید شما خالی است.",
+    "quantity": "تعداد",
+    "total": "جمع کل",
+    "checkout": "تسویه حساب"
+  },
+  "checkout": {
+    "title": "تسویه حساب",
+    "loading": "در حال بارگذاری...",
+    "empty": "سبد خرید شما خالی است.",
+    "summary": "خلاصه سفارش",
+    "discountCode": "کد تخفیف",
+    "gateway": "درگاه پرداخت",
+    "payNow": "پرداخت",
+    "processing": "در حال پردازش...",
+    "stepCart": "سبد",
+    "stepCheckout": "تسویه",
+    "stepPayment": "پرداخت",
+    "cardNumber": "شماره کارت",
+    "cardExpiry": "تاریخ انقضا",
+    "cardCvv": "CVV"
+  },
+  "account": {
+    "loginTitle": "ورود به حساب",
+    "email": "ایمیل",
+    "password": "رمز عبور",
+    "signIn": "ورود",
+    "signingIn": "در حال ورود..."
+  },
+  "orders": {
+    "title": "سفارش‌های من",
+    "subtitle": "تاریخچه سفارش‌های شما",
+    "empty": "هنوز سفارشی ثبت نکرده‌اید.",
+    "loading": "در حال بارگذاری سفارش‌ها...",
+    "status": "وضعیت",
+    "amount": "مبلغ",
+    "date": "تاریخ"
+  },
+  "tickets": {
+    "title": "تیکت‌های پشتیبانی",
+    "subtitle": "ارتباط با تیم پشتیبانی",
+    "create": "ثبت تیکت جدید",
+    "subject": "موضوع",
+    "priority": "اولویت",
+    "department": "شناسه دپارتمان",
+    "createBtn": "ثبت تیکت",
+    "creating": "در حال ثبت...",
+    "yourTickets": "تیکت‌های شما",
+    "empty": "تیکتی ثبت نشده است.",
+    "loading": "در حال بارگذاری...",
+    "reply": "پاسخ",
+    "sendReply": "ارسال پاسخ",
+    "sending": "در حال ارسال...",
+    "backOrders": "بازگشت به سفارش‌ها",
+    "priorityLow": "کم",
+    "priorityNormal": "معمولی",
+    "priorityHigh": "زیاد",
+    "priorityUrgent": "فوری"
+  },
+  "licenses": {
+    "title": "لایسنس‌ها",
+    "subtitle": "محصولات سفارش‌های پرداخت‌شده",
+    "empty": "لایسنسی وجود ندارد. پس از خرید موفق، لایسنس‌ها اینجا نمایش داده می‌شوند.",
+    "loading": "در حال بارگذاری...",
+    "key": "کلید لایسنس",
+    "quantity": "تعداد",
+    "order": "سفارش",
+    "purchased": "تاریخ خرید"
+  },
+  "cms": {
+    "loading": "در حال بارگذاری صفحه...",
+    "notFound": "صفحه یافت نشد.",
+    "empty": "محتوایی برای این صفحه ثبت نشده است."
+  },
+  "status": {
+    "pending": "در انتظار",
+    "paid": "پرداخت‌شده",
+    "cancelled": "لغو‌شده",
+    "processing": "در حال پردازش",
+    "open": "باز",
+    "closed": "بسته",
+    "resolved": "حل‌شده"
+  },
+  "footer": {
+    "rights": "تمامی حقوق محفوظ است."
+  }
+}

@@ -3,63 +3,101 @@ package domain
 import "time"
 
 const (
-	EventLeadCreated   = "crm.lead.created"
-	EventTaskReminder  = "crm.task.reminder"
+	EventLeadCreated    = "crm.lead.created"
+	EventTaskReminder   = "crm.task.reminder"
 	EventDealStageMoved = "crm.deal.stage_moved"
 )
 
 type Lead struct {
-	ID, Name, Email, Phone, Status, OwnerID, Source string
-	CreatedAt, UpdatedAt                            time.Time
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Status    string    `json:"status"`
+	OwnerID   string    `json:"owner_id,omitempty"`
+	Source    string    `json:"source,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Contact struct {
-	ID, LeadID, UserID, Name, Email, Phone, OwnerID string
-	CreatedAt, UpdatedAt                            time.Time
+	ID        string    `json:"id"`
+	LeadID    string    `json:"lead_id,omitempty"`
+	UserID    string    `json:"user_id,omitempty"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Company   string    `json:"company,omitempty"`
+	OwnerID   string    `json:"owner_id,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Pipeline struct {
-	ID, Name string
-	StagesJSON string
-	CreatedAt time.Time
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	StagesJSON string    `json:"stages_json"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Deal struct {
-	ID, Title, ContactID, PipelineID, Stage, OwnerID string
-	Amount                                           int64
-	CreatedAt, UpdatedAt                             time.Time
+	ID         string    `json:"id"`
+	Title      string    `json:"title"`
+	ContactID  string    `json:"contact_id,omitempty"`
+	PipelineID string    `json:"pipeline_id"`
+	Stage      string    `json:"stage"`
+	OwnerID    string    `json:"owner_id,omitempty"`
+	Amount     int64     `json:"amount"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 type Activity struct {
-	ID, EntityType, EntityID, Type, Body, ActorID string
-	CreatedAt                                     time.Time
+	ID         string    `json:"id"`
+	EntityType string    `json:"entity_type"`
+	EntityID   string    `json:"entity_id"`
+	Type       string    `json:"type"`
+	Body       string    `json:"body"`
+	ActorID    string    `json:"actor_id,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Task struct {
-	ID, Title, EntityType, EntityID, OwnerID, Status string
-	DueAt                                            *time.Time
-	ReminderAt                                       *time.Time
-	CreatedAt, UpdatedAt                             time.Time
+	ID         string     `json:"id"`
+	Title      string     `json:"title"`
+	EntityType string     `json:"entity_type,omitempty"`
+	EntityID   string     `json:"entity_id,omitempty"`
+	OwnerID    string     `json:"owner_id,omitempty"`
+	Status     string     `json:"status"`
+	DueAt      *time.Time `json:"due_at,omitempty"`
+	ReminderAt *time.Time `json:"reminder_at,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
 }
 
 type Tag struct {
-	ID, Name string
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type EntityTag struct {
-	EntityType, EntityID, TagID string
+	EntityType string `json:"entity_type"`
+	EntityID   string `json:"entity_id"`
+	TagID      string `json:"tag_id"`
 }
 
 type Segment struct {
-	ID, Name, RulesJSON string
-	CreatedAt           time.Time
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	RulesJSON string    `json:"rules_json"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type Customer360 struct {
-	Contact    *Contact
-	Orders     []map[string]any
-	Tickets    []map[string]any
-	Activities []Activity
-	Deals      []Deal
-	Tags       []string
+	Contact    *Contact         `json:"contact"`
+	Orders     []map[string]any `json:"orders"`
+	Tickets    []map[string]any `json:"tickets"`
+	Activities []Activity       `json:"activities"`
+	Deals      []Deal           `json:"deals"`
+	Tags       []string         `json:"tags"`
 }

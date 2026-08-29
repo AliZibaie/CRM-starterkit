@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"crm-starterkit/internal/core/event"
 	"crm-starterkit/internal/modules/catalog/domain"
 
 	"github.com/google/uuid"
@@ -16,12 +17,13 @@ import (
 var (
 	ErrNotFound     = errors.New("not found")
 	ErrInvalidInput = errors.New("invalid input")
+	ErrInUse        = errors.New("item is referenced by active orders")
 	slugRe          = regexp.MustCompile(`[^a-z0-9]+`)
 )
 
-type Service struct{ repo domain.Repository }
+type Service struct{ repo domain.Repository; bus *event.Bus }
 
-func NewService(repo domain.Repository) *Service { return &Service{repo: repo} }
+func NewService(repo domain.Repository, bus *event.Bus) *Service { return &Service{repo: repo, bus: bus} }
 
 func slugify(s string) string {
 	s = strings.ToLower(strings.TrimSpace(s))
@@ -181,4 +183,99 @@ func (s *Service) GetInventory(ctx context.Context, variantID string) (*domain.I
 		return nil, err
 	}
 	return inv, nil
+}
+
+func (s *Service) UpdateItem(ctx context.Context, id string, typ, name, description, categoryID, currency string, basePrice int64, isActive bool, actorID string) (*domain.Item, error) {
+	item, err := s.repo.FindItem(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	switch typ {
+	case domain.TypePhysical, domain.TypeService, domain.TypeCourse, domain.TypeDigital:
+	default:
+		return nil, ErrInvalidInput
+	}
+	name = strings.TrimSpace(name)
+	if name == "" || basePrice < 0 {
+		return nil, ErrInvalidInput
+	}
+	if currency == "" {
+		currency = item.Currency
+	}
+	item.Type = typ
+	item.Name = name
+	item.Description = description
+	item.CategoryID = categoryID
+	item.Currency = currency
+	item.BasePrice = basePrice
+	item.IsActive = isActive
+	item.UpdatedAt = time.Now().UTC()
+	if err := s.repo.UpdateItem(ctx, item); err != nil {
+		return nil, err
+	}
+	if s.bus != nil && actorID != "" {
+		s.bus.Publish("audit.change", map[string]any{
+			"actor_id": actorID, "module": "catalog", "action": "update",
+			"entity_type": "item", "entity_id": item.ID, "after": item,
+		})
+	}
+	return item, nil
+}
+
+func (s *Service) DeleteItem(ctx context.Context, id string) error {
+	if _, err := s.repo.FindItem(ctx, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	inUse, err := s.repo.ItemReferencedInOrders(ctx, id)
+	if err != nil {
+		return err
+	}
+	if inUse {
+		return ErrInUse
+	}
+	return s.repo.DeleteItem(ctx, id)
+}
+
+func (s *Service) UpdateCategory(ctx context.Context, id, name, parentID string) (*domain.Category, error) {
+	c, err := s.repo.FindCategoryByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, ErrInvalidInput
+	}
+	c.Name = name
+	c.ParentID = parentID
+	c.UpdatedAt = time.Now().UTC()
+	if err := s.repo.UpdateCategory(ctx, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (s *Service) DeleteCategory(ctx context.Context, id string) error {
+	if _, err := s.repo.FindCategoryByID(ctx, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	count, err := s.repo.CountItemsByCategory(ctx, id)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return ErrInUse
+	}
+	return s.repo.DeleteCategory(ctx, id)
 }

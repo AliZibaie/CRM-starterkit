@@ -53,14 +53,20 @@ type Gateway interface {
 }
 
 type Payment struct {
-	ID          string
-	OrderID     string
-	Gateway     string
-	Amount      int64
-	Currency    string
-	Status      string
-	Authority   string
-	ProviderRef string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          string    `json:"id"`
+	OrderID     string    `json:"order_id"`
+	Gateway     string    `json:"gateway"`
+	Amount      int64     `json:"amount"`
+	Currency    string    `json:"currency"`
+	Status      string    `json:"status"`
+	Authority   string    `json:"authority,omitempty"`
+	ProviderRef string    `json:"provider_ref,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type GatewayStatus struct {
+	Name       string `json:"name"`
+	Enabled    bool   `json:"enabled"`
+	Configured bool   `json:"configured"`
 }

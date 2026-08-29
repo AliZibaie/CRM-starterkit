@@ -100,8 +100,25 @@ func (s *Store) FindOrder(ctx context.Context, id string) (*domain.Order, error)
 }
 
 func (s *Store) ListOrdersByUser(ctx context.Context, userID string) ([]domain.Order, error) {
+	return s.ListOrders(ctx, "", userID, nil, nil)
+}
+
+func (s *Store) ListOrders(ctx context.Context, status, userID string, from, to *time.Time) ([]domain.Order, error) {
+	q := s.db.WithContext(ctx).Model(&OrderModel{})
+	if status != "" {
+		q = q.Where("status = ?", status)
+	}
+	if userID != "" {
+		q = q.Where("user_id = ?", userID)
+	}
+	if from != nil {
+		q = q.Where("created_at >= ?", *from)
+	}
+	if to != nil {
+		q = q.Where("created_at <= ?", *to)
+	}
 	var rows []OrderModel
-	if err := s.db.WithContext(ctx).Where("user_id = ?", userID).Order("created_at desc").Find(&rows).Error; err != nil {
+	if err := q.Order("created_at desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
 	out := make([]domain.Order, 0, len(rows))

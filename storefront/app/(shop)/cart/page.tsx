@@ -8,6 +8,8 @@ import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatPrice } from "@/lib/utils";
+import { t } from "@/lib/i18n";
+import { StepIndicator } from "@/components/checkout/step-indicator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -55,12 +57,10 @@ export default function CartPage() {
     },
   });
 
-  if (!accessToken) {
-    return null;
-  }
+  if (!accessToken) return null;
 
   if (isLoading) {
-    return <p className="text-muted-foreground">Loading cart...</p>;
+    return <p className="text-muted-foreground">{t("cart.loading")}</p>;
   }
 
   if (error) {
@@ -71,26 +71,34 @@ export default function CartPage() {
   const total = data?.total ?? 0;
   const currency = data?.cart?.currency ?? "IRR";
 
+  const steps = [
+    { id: "cart", label: t("checkout.stepCart") },
+    { id: "checkout", label: t("checkout.stepCheckout") },
+    { id: "payment", label: t("checkout.stepPayment") },
+  ];
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Cart</h1>
+      <h1 className="text-3xl font-bold">{t("cart.title")}</h1>
+      <StepIndicator steps={steps} current={0} />
       {items.length === 0 ? (
         <div className="space-y-4">
-          <p className="text-muted-foreground">Your cart is empty.</p>
+          <p className="text-muted-foreground">{t("cart.empty")}</p>
           <Button asChild variant="outline">
-            <Link href="/">Continue Shopping</Link>
+            <Link href="/categories/all">{t("common.continueShopping")}</Link>
           </Button>
         </div>
       ) : (
-        <>
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
             {items.map((item) => (
               <Card key={item.id}>
-                <CardContent className="flex items-center justify-between py-4">
-                  <div>
+                <CardContent className="flex flex-wrap items-center justify-between gap-4 py-4">
+                  <div className="text-start">
                     <p className="font-medium">{item.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      Qty: {item.quantity} × {formatPrice(item.unit_price, currency)}
+                      {t("cart.quantity")}: {item.quantity} ×{" "}
+                      {formatPrice(item.unit_price, currency)}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
@@ -103,24 +111,29 @@ export default function CartPage() {
                       onClick={() => removeItem.mutate(item.item_id)}
                       disabled={removeItem.isPending}
                     >
-                      Remove
+                      {t("common.remove")}
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-          <Card>
+          <Card className="h-fit">
             <CardHeader>
-              <CardTitle>Total: {formatPrice(total, currency)}</CardTitle>
+              <CardTitle>
+                {t("cart.total")}: {formatPrice(total, currency)}
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <Link href="/checkout">Proceed to Checkout</Link>
+            <CardContent className="flex flex-col gap-3">
+              <Button asChild size="lg">
+                <Link href="/checkout">{t("cart.checkout")}</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/categories/all">{t("common.continueShopping")}</Link>
               </Button>
             </CardContent>
           </Card>
-        </>
+        </div>
       )}
     </div>
   );

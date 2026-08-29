@@ -50,6 +50,44 @@ func (s *Service) Create(ctx context.Context, in domain.CreateInput) (*domain.Ba
 	return b, nil
 }
 
+func (s *Service) Update(ctx context.Context, id string, in domain.CreateInput) (*domain.Banner, error) {
+	b, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	title := strings.TrimSpace(in.Title)
+	image := strings.TrimSpace(in.ImageURL)
+	position := strings.TrimSpace(in.Position)
+	if title == "" || image == "" || position == "" {
+		return nil, ErrInvalidInput
+	}
+	if _, ok := allowedPositions[position]; !ok {
+		return nil, ErrInvalidInput
+	}
+	b.Title = title
+	b.ImageURL = image
+	b.LinkURL = strings.TrimSpace(in.LinkURL)
+	b.Position = position
+	b.UpdatedAt = time.Now().UTC()
+	if err := s.repo.Update(ctx, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func (s *Service) Delete(ctx context.Context, id string) error {
+	if _, err := s.repo.FindByID(ctx, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	return s.repo.Delete(ctx, id)
+}
+
 func (s *Service) Schedule(ctx context.Context, id string, in domain.ScheduleInput) (*domain.Banner, error) {
 	b, err := s.repo.FindByID(ctx, id)
 	if err != nil {

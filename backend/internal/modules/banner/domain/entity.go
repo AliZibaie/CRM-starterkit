@@ -3,16 +3,16 @@ package domain
 import "time"
 
 type Banner struct {
-	ID        string
-	Title     string
-	ImageURL  string
-	LinkURL   string
-	Position  string
-	IsActive  bool
-	StartsAt  *time.Time
-	EndsAt    *time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string     `json:"id"`
+	Title     string     `json:"title"`
+	ImageURL  string     `json:"image_url"`
+	LinkURL   string     `json:"link_url,omitempty"`
+	Position  string     `json:"position"`
+	IsActive  bool       `json:"is_active"`
+	StartsAt  *time.Time `json:"starts_at,omitempty"`
+	EndsAt    *time.Time `json:"ends_at,omitempty"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }
 
 type CreateInput struct {

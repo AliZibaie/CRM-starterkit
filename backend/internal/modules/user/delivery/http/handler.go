@@ -108,7 +108,8 @@ func (h *Handler) List(c *fiber.Ctx) error {
 	}
 	items := make([]userResponse, 0, len(users))
 	for i := range users {
-		items = append(items, toUserResponse(&users[i], nil))
+		roleIDs, _ := h.service.RoleIDsByUser(c.Context(), users[i].ID)
+		items = append(items, toUserResponse(&users[i], roleIDs))
 	}
 	return response.WithMeta(c, items, fiber.Map{
 		"page":     page,

@@ -82,6 +82,22 @@ func (s *Store) FindOrderAmount(ctx context.Context, orderID string) (int64, str
 	return row.TotalAmount, row.Currency, row.Status, nil
 }
 
+func (s *Store) ListByStatus(ctx context.Context, status string, limit int) ([]domain.Payment, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	var rows []PaymentModel
+	q := s.db.WithContext(ctx).Where("status = ?", status).Order("created_at desc").Limit(limit)
+	if err := q.Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make([]domain.Payment, 0, len(rows))
+	for i := range rows {
+		out = append(out, *toDomain(&rows[i]))
+	}
+	return out, nil
+}
+
 func toModel(p *domain.Payment) *PaymentModel {
 	return &PaymentModel{
 		ID: p.ID, OrderID: p.OrderID, Gateway: p.Gateway, Amount: p.Amount, Currency: p.Currency,

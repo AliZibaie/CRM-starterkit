@@ -4,14 +4,20 @@ import "context"
 
 type Repository interface {
 	CreateCategory(ctx context.Context, c *Category) error
+	UpdateCategory(ctx context.Context, c *Category) error
+	DeleteCategory(ctx context.Context, id string) error
 	ListCategories(ctx context.Context) ([]Category, error)
+	FindCategoryByID(ctx context.Context, id string) (*Category, error)
+	CountItemsByCategory(ctx context.Context, categoryID string) (int64, error)
 
 	CreateItem(ctx context.Context, item *Item) error
 	UpdateItem(ctx context.Context, item *Item) error
+	DeleteItem(ctx context.Context, id string) error
 	FindItem(ctx context.Context, id string) (*Item, error)
 	FindItemBySlug(ctx context.Context, slug string) (*Item, error)
 	ListItems(ctx context.Context) ([]Item, error)
 	ListActiveItems(ctx context.Context) ([]Item, error)
+	ItemReferencedInOrders(ctx context.Context, itemID string) (bool, error)
 
 	FindCategoryBySlug(ctx context.Context, slug string) (*Category, error)
 	ListItemsByCategory(ctx context.Context, categoryID string) ([]Item, error)

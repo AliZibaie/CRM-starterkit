@@ -48,6 +48,7 @@ type Options struct {
 func NewServer(opts Options) *Server {
 	app := fiber.New(fiber.Config{
 		AppName:      opts.Config.App.Name,
+		BodyLimit:    50 * 1024 * 1024,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -70,6 +71,7 @@ func NewServer(opts Options) *Server {
 
 	s.registerMiddleware(opts)
 	s.registerCoreRoutes()
+	s.registerStaticStorage()
 
 	return s
 }
@@ -88,6 +90,15 @@ func (s *Server) registerMiddleware(opts Options) {
 		recorder = opts.RecorderHub.Record
 	}
 	s.app.Use(middleware.RequestLogger(s.log, recorder))
+}
+
+func (s *Server) registerStaticStorage() {
+	if s.cfg.Storage.Driver != "local" || s.cfg.Storage.LocalPath == "" {
+		return
+	}
+	s.app.Static("/uploads", s.cfg.Storage.LocalPath, fiber.Static{
+		Browse: false,
+	})
 }
 
 func (s *Server) registerCoreRoutes() {

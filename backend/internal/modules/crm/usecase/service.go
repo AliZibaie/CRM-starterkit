@@ -192,6 +192,65 @@ func (s *Service) Customer360(ctx context.Context, contactID string) (*domain.Cu
 	}, nil
 }
 
+func (s *Service) ListDealsByPipeline(ctx context.Context, pipelineID string) ([]domain.Deal, error) {
+	if pipelineID == "" {
+		return nil, ErrInvalidInput
+	}
+	return s.repo.ListDealsByPipeline(ctx, pipelineID)
+}
+
+func (s *Service) ListActivities(ctx context.Context, entityType, entityID string) ([]domain.Activity, error) {
+	if entityType == "" || entityID == "" {
+		return nil, ErrInvalidInput
+	}
+	return s.repo.ListActivities(ctx, entityType, entityID)
+}
+
+func (s *Service) CreateContact(ctx context.Context, name, email, phone, company, ownerID string) (*domain.Contact, error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, ErrInvalidInput
+	}
+	now := time.Now().UTC()
+	c := &domain.Contact{
+		ID: uuid.NewString(), Name: name, Email: strings.TrimSpace(email), Phone: strings.TrimSpace(phone),
+		Company: strings.TrimSpace(company), OwnerID: ownerID, CreatedAt: now, UpdatedAt: now,
+	}
+	if err := s.repo.CreateContact(ctx, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (s *Service) UpdateContact(ctx context.Context, id, name, email, phone, company string) (*domain.Contact, error) {
+	c, err := s.repo.FindContact(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	c.Name = strings.TrimSpace(name)
+	c.Email = strings.TrimSpace(email)
+	c.Phone = strings.TrimSpace(phone)
+	c.Company = strings.TrimSpace(company)
+	c.UpdatedAt = time.Now().UTC()
+	if err := s.repo.UpdateContact(ctx, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (s *Service) DeleteContact(ctx context.Context, id string) error {
+	if _, err := s.repo.FindContact(ctx, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	return s.repo.DeleteContact(ctx, id)
+}
+
 func (s *Service) ListLeads(ctx context.Context) ([]domain.Lead, error) { return s.repo.ListLeads(ctx) }
 func (s *Service) ListContacts(ctx context.Context) ([]domain.Contact, error) {
 	return s.repo.ListContacts(ctx)

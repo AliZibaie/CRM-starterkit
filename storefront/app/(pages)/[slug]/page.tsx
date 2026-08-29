@@ -4,6 +4,8 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { publicApi } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 
 interface Page {
   id: string;
@@ -33,21 +35,27 @@ export default function CmsPage() {
   });
 
   if (isLoading) {
-    return <p className="text-muted-foreground">Loading page...</p>;
+    return <p className="text-muted-foreground">{t("cms.loading")}</p>;
   }
 
   if (error || !data) {
-    return <p className="text-destructive">Page not found.</p>;
+    return <p className="text-destructive">{t("cms.notFound")}</p>;
   }
 
   const { page, blocks } = data;
   const sorted = [...blocks].sort((a, b) => a.sort_order - b.sort_order);
 
   return (
-    <article className="prose prose-slate max-w-none space-y-6">
+    <article className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: t("brand"), href: "/" },
+          { label: page.title },
+        ]}
+      />
       <h1 className="text-3xl font-bold">{page.title}</h1>
       {sorted.map((block) => (
-        <section key={block.id}>
+        <section key={block.id} className="cms-content leading-8">
           {block.type === "html" ? (
             <div dangerouslySetInnerHTML={{ __html: block.content }} />
           ) : (
@@ -56,7 +64,7 @@ export default function CmsPage() {
         </section>
       ))}
       {sorted.length === 0 && (
-        <p className="text-muted-foreground">This page has no content yet.</p>
+        <p className="text-muted-foreground">{t("cms.empty")}</p>
       )}
     </article>
   );

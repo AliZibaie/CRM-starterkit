@@ -81,6 +81,47 @@ func (h *Handler) ListDepartments(c *fiber.Ctx) error {
 	return response.OK(c, items)
 }
 
+type updateDeptRequest struct {
+	Name        string `json:"name" validate:"required"`
+	Description string `json:"description"`
+}
+
+// @Summary Update department
+// @Tags support
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path string true "department id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/support/departments/{id} [put]
+func (h *Handler) UpdateDepartment(c *fiber.Ctx) error {
+	var req updateDeptRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	d, err := h.service.UpdateDepartment(c.Context(), c.Params("id"), req.Name, req.Description)
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, d)
+}
+
+// @Summary Delete department
+// @Tags support
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "department id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/support/departments/{id} [delete]
+func (h *Handler) DeleteDepartment(c *fiber.Ctx) error {
+	if err := h.service.DeleteDepartment(c.Context(), c.Params("id")); err != nil {
+		return mapErr(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "department deleted", nil)
+}
+
 // @Summary Create ticket
 // @Tags support
 // @Security BearerAuth
@@ -109,7 +150,7 @@ func (h *Handler) CreateTicket(c *fiber.Ctx) error {
 // @Success 200 {array} map[string]interface{}
 // @Router /api/v1/support/tickets [get]
 func (h *Handler) ListTickets(c *fiber.Ctx) error {
-	items, err := h.service.ListTickets(c.Context())
+	items, err := h.service.ListTickets(c.Context(), c.Query("status"), c.Query("department_id"), c.Query("priority"))
 	if err != nil {
 		return response.Internal(c, err.Error())
 	}
@@ -248,6 +289,8 @@ func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g := router.Group("/support", middleware.Auth(jwt))
 	g.Post("/departments", middleware.RequireAnyPermission("support.department.manage"), h.CreateDepartment)
 	g.Get("/departments", middleware.RequireAnyPermission("support.read"), h.ListDepartments)
+	g.Put("/departments/:id", middleware.RequireAnyPermission("support.department.manage"), h.UpdateDepartment)
+	g.Delete("/departments/:id", middleware.RequireAnyPermission("support.department.manage"), h.DeleteDepartment)
 	g.Post("/tickets", middleware.RequireAnyPermission("support.ticket.create"), h.CreateTicket)
 	g.Get("/tickets", middleware.RequireAnyPermission("support.read"), h.ListTickets)
 	g.Get("/tickets/:id", middleware.RequireAnyPermission("support.read"), h.GetTicket)

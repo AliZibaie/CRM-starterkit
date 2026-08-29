@@ -125,6 +125,78 @@ func (h *Handler) CreateJob(c *fiber.Ctx) error {
 	return response.Created(c, job)
 }
 
+// @Summary Get cron job
+// @Tags cronbuilder
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "job id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/cronbuilder/jobs/{id} [get]
+func (h *Handler) GetJob(c *fiber.Ctx) error {
+	job, err := h.service.GetJob(c.Context(), c.Params("id"))
+	if err != nil {
+		return mapCronError(c, err)
+	}
+	return response.OK(c, job)
+}
+
+type updateJobRequest struct {
+	Name      string               `json:"name" validate:"required"`
+	TableName string               `json:"table_name" validate:"required"`
+	Condition domain.ConditionNode `json:"condition"`
+	Action    domain.JobAction     `json:"action" validate:"required"`
+	CronExpr  string               `json:"cron_expr" validate:"required"`
+	IsActive  *bool                `json:"is_active"`
+}
+
+// @Summary Update cron job
+// @Tags cronbuilder
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path string true "job id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/cronbuilder/jobs/{id} [put]
+func (h *Handler) UpdateJob(c *fiber.Ctx) error {
+	var req updateJobRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	if err := h.validate.Struct(req); err != nil {
+		return response.BadRequest(c, err.Error(), nil)
+	}
+	active := true
+	if req.IsActive != nil {
+		active = *req.IsActive
+	}
+	job, err := h.service.UpdateJob(c.Context(), c.Params("id"), domain.CreateJobInput{
+		Name: req.Name, TableName: req.TableName, Condition: req.Condition,
+		Action: req.Action, CronExpr: req.CronExpr, IsActive: active,
+	})
+	if err != nil {
+		return mapCronError(c, err)
+	}
+	return response.OK(c, job)
+}
+
+// @Summary Delete cron job
+// @Tags cronbuilder
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "job id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/cronbuilder/jobs/{id} [delete]
+func (h *Handler) DeleteJob(c *fiber.Ctx) error {
+	if err := h.service.DeleteJob(c.Context(), c.Params("id")); err != nil {
+		return mapCronError(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "job deleted", nil)
+}
+
 // @Summary List cron jobs
 // @Tags cronbuilder
 // @Security BearerAuth
@@ -182,6 +254,9 @@ func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g.Post("/conditions/build", middleware.RequireAnyPermission("cronbuilder.create"), h.BuildCondition)
 	g.Post("/jobs", middleware.RequireAnyPermission("cronbuilder.create"), h.CreateJob)
 	g.Get("/jobs", middleware.RequireAnyPermission("cronbuilder.read"), h.ListJobs)
+	g.Get("/jobs/:id", middleware.RequireAnyPermission("cronbuilder.read"), h.GetJob)
+	g.Put("/jobs/:id", middleware.RequireAnyPermission("cronbuilder.create"), h.UpdateJob)
+	g.Delete("/jobs/:id", middleware.RequireAnyPermission("cronbuilder.create"), h.DeleteJob)
 	g.Post("/jobs/:id/run", middleware.RequireAnyPermission("cronbuilder.run"), h.RunNow)
 	g.Get("/jobs/:id/logs", middleware.RequireAnyPermission("cronbuilder.read"), h.Logs)
 }

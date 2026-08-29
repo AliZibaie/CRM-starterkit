@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { t } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export interface FormField {
   name: string;
@@ -19,6 +21,7 @@ export interface FormField {
   placeholder?: string;
   required?: boolean;
   options?: { label: string; value: string }[];
+  ltr?: boolean;
 }
 
 interface DynamicFormProps {
@@ -35,12 +38,12 @@ export function DynamicForm({
   values,
   onChange,
   onSubmit,
-  submitLabel = "Submit",
+  submitLabel,
   loading,
 }: DynamicFormProps) {
   return (
     <form
-      className="space-y-4"
+      className="space-y-4 text-start"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit();
@@ -63,7 +66,7 @@ export function DynamicForm({
               onValueChange={(v) => onChange(field.name, v)}
             >
               <SelectTrigger id={field.name}>
-                <SelectValue placeholder={field.placeholder || "Select"} />
+                <SelectValue placeholder={field.placeholder || t("common.select")} />
               </SelectTrigger>
               <SelectContent>
                 {field.options?.map((opt) => (
@@ -94,12 +97,16 @@ export function DynamicForm({
               }
               placeholder={field.placeholder}
               required={field.required}
+              className={cn(
+                (field.ltr || field.type === "number" || field.type === "email") &&
+                  "ltr-field"
+              )}
             />
           )}
         </div>
       ))}
       <Button type="submit" disabled={loading}>
-        {loading ? "Saving..." : submitLabel}
+        {loading ? t("common.saving") : submitLabel ?? t("common.submit")}
       </Button>
     </form>
   );

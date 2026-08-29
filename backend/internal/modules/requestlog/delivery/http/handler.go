@@ -81,7 +81,10 @@ func (h *Handler) Stats(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Internal(c, err.Error())
 	}
-	return response.OK(c, stats)
+	return response.OK(c, domain.StatsResponse{
+		Total: stats.Total, AvgDurationMs: stats.AvgDurationMs,
+		ErrorCount: stats.ErrorCount, SuspiciousCount: stats.Suspicious,
+	})
 }
 
 // @Summary Check suspicious IP

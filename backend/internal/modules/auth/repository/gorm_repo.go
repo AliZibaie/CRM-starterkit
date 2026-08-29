@@ -74,11 +74,11 @@ func (s *Store) RoleNamesByUser(ctx context.Context, userID string) ([]string, e
 func (s *Store) PermissionKeysByUser(ctx context.Context, userID string) ([]string, error) {
 	var keys []string
 	err := s.db.WithContext(ctx).Table("permissions").
-		Select("DISTINCT permissions.key").
+		Select("DISTINCT permissions.permission_key").
 		Joins("JOIN role_permissions ON role_permissions.permission_id = permissions.id").
 		Joins("JOIN user_roles ON user_roles.role_id = role_permissions.role_id").
 		Where("user_roles.user_id = ?", userID).
-		Pluck("permissions.key", &keys).Error
+		Pluck("permissions.permission_key", &keys).Error
 	return keys, err
 }
 

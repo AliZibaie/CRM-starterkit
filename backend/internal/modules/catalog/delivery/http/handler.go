@@ -171,6 +171,59 @@ func (h *Handler) CreateVariant(c *fiber.Ctx) error {
 	return response.Created(c, v)
 }
 
+func (h *Handler) UpdateItem(c *fiber.Ctx) error {
+	var req struct {
+		Type        string `json:"type" validate:"required"`
+		Name        string `json:"name" validate:"required"`
+		Description string `json:"description"`
+		CategoryID  string `json:"category_id"`
+		Currency    string `json:"currency"`
+		BasePrice   int64  `json:"base_price"`
+		IsActive    *bool  `json:"is_active"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	active := true
+	if req.IsActive != nil {
+		active = *req.IsActive
+	}
+	item, err := h.service.UpdateItem(c.Context(), c.Params("id"), req.Type, req.Name, req.Description, req.CategoryID, req.Currency, req.BasePrice, active, middleware.UserIDFromContext(c))
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, item)
+}
+
+func (h *Handler) DeleteItem(c *fiber.Ctx) error {
+	if err := h.service.DeleteItem(c.Context(), c.Params("id")); err != nil {
+		return mapErr(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "item deleted", nil)
+}
+
+func (h *Handler) UpdateCategory(c *fiber.Ctx) error {
+	var req struct {
+		Name     string `json:"name" validate:"required"`
+		ParentID string `json:"parent_id"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	item, err := h.service.UpdateCategory(c.Context(), c.Params("id"), req.Name, req.ParentID)
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, item)
+}
+
+func (h *Handler) DeleteCategory(c *fiber.Ctx) error {
+	if err := h.service.DeleteCategory(c.Context(), c.Params("id")); err != nil {
+		return mapErr(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "category deleted", nil)
+}
+
 // @Summary Set inventory
 // @Tags catalog
 // @Security BearerAuth
@@ -257,8 +310,12 @@ func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g.Post("/items", middleware.RequireAnyPermission("catalog.item.manage"), h.CreateItem)
 	g.Get("/items", middleware.RequireAnyPermission("catalog.read"), h.ListItems)
 	g.Get("/items/:id", middleware.RequireAnyPermission("catalog.read"), h.GetItem)
+	g.Put("/items/:id", middleware.RequireAnyPermission("catalog.item.manage"), h.UpdateItem)
+	g.Delete("/items/:id", middleware.RequireAnyPermission("catalog.item.manage"), h.DeleteItem)
 	g.Post("/items/:id/attributes", middleware.RequireAnyPermission("catalog.item.manage"), h.SetAttribute)
 	g.Post("/items/:id/variants", middleware.RequireAnyPermission("catalog.item.manage"), h.CreateVariant)
+	g.Put("/categories/:id", middleware.RequireAnyPermission("catalog.category.manage"), h.UpdateCategory)
+	g.Delete("/categories/:id", middleware.RequireAnyPermission("catalog.category.manage"), h.DeleteCategory)
 	g.Put("/inventory/:variant_id", middleware.RequireAnyPermission("catalog.inventory.manage"), h.SetInventory)
 	g.Get("/inventory/:variant_id", middleware.RequireAnyPermission("catalog.read"), h.GetInventory)
 }
@@ -269,6 +326,8 @@ func mapErr(c *fiber.Ctx, err error) error {
 		return response.NotFound(c, err.Error())
 	case errors.Is(err, usecase.ErrInvalidInput):
 		return response.BadRequest(c, err.Error(), nil)
+	case errors.Is(err, usecase.ErrInUse):
+		return response.Conflict(c, err.Error())
 	default:
 		return response.Internal(c, err.Error())
 	}

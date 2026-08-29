@@ -66,9 +66,55 @@ func (s *Service) SetBlocks(ctx context.Context, pageID string, blocks []domain.
 	return s.repo.SaveBlocks(ctx, pageID, blocks)
 }
 
-func (s *Service) UpsertMenu(ctx context.Context, name, location, itemsJSON string) (*domain.Menu, error) {
+func (s *Service) GetPageByID(ctx context.Context, id string) (*domain.Page, []domain.Block, error) {
+	p, err := s.repo.FindPageByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil, ErrNotFound
+		}
+		return nil, nil, err
+	}
+	blocks, err := s.repo.ListBlocks(ctx, p.ID)
+	return p, blocks, err
+}
+
+func (s *Service) UpdatePage(ctx context.Context, id, title, slug, status string) (*domain.Page, error) {
+	p, err := s.repo.FindPageByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	if title = strings.TrimSpace(title); title != "" {
+		p.Title = title
+	}
+	if slug = strings.TrimSpace(slug); slug != "" {
+		p.Slug = slug
+	}
+	if status = strings.TrimSpace(status); status != "" {
+		p.Status = status
+	}
+	p.UpdatedAt = time.Now().UTC()
+	if err := s.repo.UpdatePage(ctx, p); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+func (s *Service) UpsertMenu(ctx context.Context, id, name, location, itemsJSON string) (*domain.Menu, error) {
 	now := time.Now().UTC()
-	m := &domain.Menu{ID: uuid.NewString(), Name: name, Location: location, ItemsJSON: itemsJSON, CreatedAt: now, UpdatedAt: now}
+	if existing, err := s.repo.FindMenuByName(ctx, name); err == nil && existing != nil {
+		existing.ItemsJSON = itemsJSON
+		existing.Location = location
+		existing.UpdatedAt = now
+		return existing, s.repo.UpsertMenu(ctx, existing)
+	}
+	menuID := id
+	if menuID == "" {
+		menuID = uuid.NewString()
+	}
+	m := &domain.Menu{ID: menuID, Name: name, Location: location, ItemsJSON: itemsJSON, CreatedAt: now, UpdatedAt: now}
 	return m, s.repo.UpsertMenu(ctx, m)
 }
 

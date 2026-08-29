@@ -12,7 +12,7 @@ import (
 type Model struct {
 	ID           string    `gorm:"primaryKey;size:36"`
 	OwnerID      string    `gorm:"size:36;index"`
-	Key          string    `gorm:"size:500;not null"`
+	Key          string    `gorm:"column:storage_key;size:500;not null"`
 	URL          string    `gorm:"size:500;not null"`
 	ThumbnailKey string    `gorm:"size:500"`
 	ThumbnailURL string    `gorm:"size:500"`
@@ -47,6 +47,18 @@ func (s *Store) FindByID(ctx context.Context, id string) (*domain.Media, error) 
 func (s *Store) ListByOwner(ctx context.Context, ownerID string) ([]domain.Media, error) {
 	var rows []Model
 	if err := s.db.WithContext(ctx).Where("owner_id = ?", ownerID).Order("created_at desc").Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make([]domain.Media, 0, len(rows))
+	for i := range rows {
+		out = append(out, *toDomain(&rows[i]))
+	}
+	return out, nil
+}
+
+func (s *Store) ListAll(ctx context.Context) ([]domain.Media, error) {
+	var rows []Model
+	if err := s.db.WithContext(ctx).Order("created_at desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
 	out := make([]domain.Media, 0, len(rows))

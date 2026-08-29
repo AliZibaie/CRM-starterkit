@@ -3,6 +3,7 @@ package rbac
 import (
 	"context"
 
+	"crm-starterkit/internal/core/http/middleware"
 	"crm-starterkit/internal/core/module"
 	httpdelivery "crm-starterkit/internal/modules/rbac/delivery/http"
 	"crm-starterkit/internal/modules/rbac/repository"
@@ -42,6 +43,9 @@ func (m *Module) Init(ctx context.Context, deps module.Dependencies) error {
 	if _, err := m.service.EnsureAdminRole(ctx); err != nil {
 		return err
 	}
+	middleware.SetPermissionChecker(middleware.PermissionFunc(func(userID, permission string) (bool, error) {
+		return m.service.HasPermission(context.Background(), userID, permission)
+	}))
 	return nil
 }
 

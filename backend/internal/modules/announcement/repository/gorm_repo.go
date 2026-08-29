@@ -38,6 +38,10 @@ func (s *Store) Update(ctx context.Context, a *domain.Announcement) error {
 	return s.db.WithContext(ctx).Save(toModel(a)).Error
 }
 
+func (s *Store) Delete(ctx context.Context, id string) error {
+	return s.db.WithContext(ctx).Delete(&Model{}, "id = ?", id).Error
+}
+
 func (s *Store) FindByID(ctx context.Context, id string) (*domain.Announcement, error) {
 	var m Model
 	if err := s.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {

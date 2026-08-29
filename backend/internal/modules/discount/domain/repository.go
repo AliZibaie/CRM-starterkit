@@ -8,4 +8,6 @@ type Repository interface {
 	FindByID(ctx context.Context, id string) (*Discount, error)
 	List(ctx context.Context) ([]Discount, error)
 	IncrementUsage(ctx context.Context, id string) error
+	Update(ctx context.Context, d *Discount) error
+	Delete(ctx context.Context, id string) error
 }

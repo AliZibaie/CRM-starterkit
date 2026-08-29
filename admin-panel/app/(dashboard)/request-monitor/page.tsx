@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatGregorianDateTime } from "@/lib/date";
+import { datetimeLocalToRFC3339 } from "@/lib/datetime-input";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +22,8 @@ interface RequestLog {
   status: number;
   user_id: string;
   duration_ms: number;
+  country?: string;
+  city?: string;
   suspicious: boolean;
   created_at: string;
 }
@@ -35,20 +40,13 @@ export default function RequestMonitorPage() {
   const [path, setPath] = useState("");
   const [status, setStatus] = useState("");
   const [userId, setUserId] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [fromLocal, setFromLocal] = useState("");
+  const [toLocal, setToLocal] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   const filters = useMemo(
-    () => ({
-      ip,
-      path,
-      status,
-      user_id: userId,
-      from,
-      to,
-    }),
-    [ip, path, status, userId, from, to]
+    () => ({ ip, path, status, user_id: userId, from: fromLocal, to: toLocal }),
+    [ip, path, status, userId, fromLocal, toLocal]
   );
 
   const queryString = useMemo(() => {
@@ -57,21 +55,25 @@ export default function RequestMonitorPage() {
     if (path) params.set("path", path);
     if (status) params.set("status", status);
     if (userId) params.set("user_id", userId);
+    const from = datetimeLocalToRFC3339(fromLocal);
+    const to = datetimeLocalToRFC3339(toLocal);
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     params.set("limit", "100");
     return params.toString();
-  }, [ip, path, status, userId, from, to]);
+  }, [ip, path, status, userId, fromLocal, toLocal]);
 
   const statsQueryString = useMemo(() => {
     const params = new URLSearchParams();
     if (ip) params.set("ip", ip);
     if (path) params.set("path", path);
     if (userId) params.set("user_id", userId);
+    const from = datetimeLocalToRFC3339(fromLocal);
+    const to = datetimeLocalToRFC3339(toLocal);
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     return params.toString();
-  }, [ip, path, userId, from, to]);
+  }, [ip, path, userId, fromLocal, toLocal]);
 
   const { data = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: queryKeys.requestLogs(filters),
@@ -85,9 +87,7 @@ export default function RequestMonitorPage() {
   const { data: stats } = useQuery({
     queryKey: queryKeys.requestStats(filters),
     queryFn: async () => {
-      const res = await api.get<RequestStats>(
-        `/request-logs/stats?${statsQueryString}`
-      );
+      const res = await api.get<RequestStats>(`/request-logs/stats?${statsQueryString}`);
       return res.data;
     },
     refetchInterval: autoRefresh ? 5000 : false,
@@ -97,22 +97,18 @@ export default function RequestMonitorPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Request Monitor</h1>
+          <h1 className="text-2xl font-bold">{t("pages.requestMonitor.title")}</h1>
           <p className="text-muted-foreground">
-            Live HTTP request log with filters
-            {isFetching && autoRefresh && " (refreshing...)"}
+            {t("pages.requestMonitor.subtitle")}
+            {isFetching && autoRefresh && t("common.refreshing")}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant={autoRefresh ? "default" : "outline"}
-            size="sm"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
-            Auto-refresh {autoRefresh ? "ON" : "OFF"}
+          <Button variant={autoRefresh ? "default" : "outline"} size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
+            {autoRefresh ? t("common.autoRefreshOn") : t("common.autoRefreshOff")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
-            Refresh Now
+            {t("common.refreshNow")}
           </Button>
         </div>
       </div>
@@ -121,7 +117,7 @@ export default function RequestMonitorPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.totalRequests")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.total}</p>
@@ -129,7 +125,7 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Avg Duration</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.avgDuration")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.avg_duration_ms} ms</p>
@@ -137,7 +133,7 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Errors</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.errors")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.error_count}</p>
@@ -145,7 +141,7 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Suspicious</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.suspicious")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.suspicious_count}</p>
@@ -156,32 +152,32 @@ export default function RequestMonitorPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle>{t("common.filters")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           <div className="space-y-2">
-            <Label>IP</Label>
+            <Label>{t("common.ip")}</Label>
             <Input value={ip} onChange={(e) => setIp(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Path</Label>
+            <Label>{t("common.path")}</Label>
             <Input value={path} onChange={(e) => setPath(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Status</Label>
+            <Label>{t("common.status")}</Label>
             <Input value={status} onChange={(e) => setStatus(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>User ID</Label>
+            <Label>{t("common.userId")}</Label>
             <Input value={userId} onChange={(e) => setUserId(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>From (RFC3339)</Label>
-            <Input value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Label>{t("common.from")}</Label>
+            <Input type="datetime-local" value={fromLocal} onChange={(e) => setFromLocal(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>To (RFC3339)</Label>
-            <Input value={to} onChange={(e) => setTo(e.target.value)} />
+            <Label>{t("common.to")}</Label>
+            <Input type="datetime-local" value={toLocal} onChange={(e) => setToLocal(e.target.value)} />
           </div>
         </CardContent>
       </Card>
@@ -191,31 +187,39 @@ export default function RequestMonitorPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
-          { key: "created_at", header: "Time" },
-          { key: "ip", header: "IP" },
-          { key: "method", header: "Method" },
-          { key: "path", header: "Path" },
+          {
+            key: "created_at",
+            header: t("common.time"),
+            render: (row) => formatGregorianDateTime(row.created_at as string),
+          },
+          { key: "ip", header: t("common.ip") },
+          {
+            key: "geo",
+            header: t("pages.requestMonitor.geo"),
+            render: (row) => {
+              const country = row.country as string;
+              const city = row.city as string;
+              return country || city ? `${country || "—"} / ${city || "—"}` : "—";
+            },
+          },
+          { key: "method", header: t("common.method") },
+          { key: "path", header: t("common.path") },
           {
             key: "status",
-            header: "Status",
+            header: t("common.status"),
             render: (row) => {
               const s = row.status as number;
-              const variant =
-                s >= 500 ? "destructive" : s >= 400 ? "secondary" : "success";
+              const variant = s >= 500 ? "destructive" : s >= 400 ? "secondary" : "success";
               return <Badge variant={variant}>{s}</Badge>;
             },
           },
-          { key: "user_id", header: "User" },
-          { key: "duration_ms", header: "Duration (ms)" },
+          { key: "user_id", header: t("common.userId"), className: "font-mono text-xs" },
+          { key: "duration_ms", header: t("common.durationMs") },
           {
             key: "suspicious",
-            header: "Suspicious",
+            header: t("common.suspicious"),
             render: (row) =>
-              row.suspicious ? (
-                <Badge variant="destructive">Yes</Badge>
-              ) : (
-                "No"
-              ),
+              row.suspicious ? <Badge variant="destructive">{t("common.yes")}</Badge> : t("common.no"),
           },
         ]}
       />

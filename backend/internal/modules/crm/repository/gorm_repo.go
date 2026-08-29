@@ -17,8 +17,8 @@ type LeadModel struct {
 func (LeadModel) TableName() string { return "crm_leads" }
 
 type ContactModel struct {
-	ID, LeadID, UserID, Name, Email, Phone, OwnerID string
-	CreatedAt, UpdatedAt                            time.Time
+	ID, LeadID, UserID, Name, Email, Phone, Company, OwnerID string
+	CreatedAt, UpdatedAt                                      time.Time
 }
 
 func (ContactModel) TableName() string { return "crm_contacts" }
@@ -111,24 +111,24 @@ func (s *Store) ListLeads(ctx context.Context) ([]domain.Lead, error) {
 }
 
 func (s *Store) CreateContact(ctx context.Context, c *domain.Contact) error {
-	return s.db.WithContext(ctx).Create(&ContactModel{ID: c.ID, LeadID: c.LeadID, UserID: c.UserID, Name: c.Name, Email: c.Email, Phone: c.Phone, OwnerID: c.OwnerID, CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt}).Error
+	return s.db.WithContext(ctx).Create(&ContactModel{ID: c.ID, LeadID: c.LeadID, UserID: c.UserID, Name: c.Name, Email: c.Email, Phone: c.Phone, Company: c.Company, OwnerID: c.OwnerID, CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt}).Error
 }
 func (s *Store) UpdateContact(ctx context.Context, c *domain.Contact) error {
-	return s.db.WithContext(ctx).Save(&ContactModel{ID: c.ID, LeadID: c.LeadID, UserID: c.UserID, Name: c.Name, Email: c.Email, Phone: c.Phone, OwnerID: c.OwnerID, CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt}).Error
+	return s.db.WithContext(ctx).Save(&ContactModel{ID: c.ID, LeadID: c.LeadID, UserID: c.UserID, Name: c.Name, Email: c.Email, Phone: c.Phone, Company: c.Company, OwnerID: c.OwnerID, CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt}).Error
 }
 func (s *Store) FindContact(ctx context.Context, id string) (*domain.Contact, error) {
 	var m ContactModel
 	if err := s.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
-	return &domain.Contact{ID: m.ID, LeadID: m.LeadID, UserID: m.UserID, Name: m.Name, Email: m.Email, Phone: m.Phone, OwnerID: m.OwnerID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
+	return &domain.Contact{ID: m.ID, LeadID: m.LeadID, UserID: m.UserID, Name: m.Name, Email: m.Email, Phone: m.Phone, Company: m.Company, OwnerID: m.OwnerID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
 }
 func (s *Store) FindContactByEmail(ctx context.Context, email string) (*domain.Contact, error) {
 	var m ContactModel
 	if err := s.db.WithContext(ctx).First(&m, "email = ?", email).Error; err != nil {
 		return nil, err
 	}
-	return &domain.Contact{ID: m.ID, LeadID: m.LeadID, UserID: m.UserID, Name: m.Name, Email: m.Email, Phone: m.Phone, OwnerID: m.OwnerID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
+	return &domain.Contact{ID: m.ID, LeadID: m.LeadID, UserID: m.UserID, Name: m.Name, Email: m.Email, Phone: m.Phone, Company: m.Company, OwnerID: m.OwnerID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
 }
 func (s *Store) ListContacts(ctx context.Context) ([]domain.Contact, error) {
 	var rows []ContactModel
@@ -137,7 +137,7 @@ func (s *Store) ListContacts(ctx context.Context) ([]domain.Contact, error) {
 	}
 	out := make([]domain.Contact, 0, len(rows))
 	for _, m := range rows {
-		out = append(out, domain.Contact{ID: m.ID, LeadID: m.LeadID, UserID: m.UserID, Name: m.Name, Email: m.Email, Phone: m.Phone, OwnerID: m.OwnerID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt})
+		out = append(out, domain.Contact{ID: m.ID, LeadID: m.LeadID, UserID: m.UserID, Name: m.Name, Email: m.Email, Phone: m.Phone, Company: m.Company, OwnerID: m.OwnerID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt})
 	}
 	return out, nil
 }
@@ -180,6 +180,22 @@ func (s *Store) ListDealsByContact(ctx context.Context, contactID string) ([]dom
 		out = append(out, domain.Deal{ID: m.ID, Title: m.Title, ContactID: m.ContactID, PipelineID: m.PipelineID, Stage: m.Stage, OwnerID: m.OwnerID, Amount: m.Amount, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt})
 	}
 	return out, nil
+}
+
+func (s *Store) ListDealsByPipeline(ctx context.Context, pipelineID string) ([]domain.Deal, error) {
+	var rows []DealModel
+	if err := s.db.WithContext(ctx).Where("pipeline_id = ?", pipelineID).Order("updated_at desc").Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make([]domain.Deal, 0, len(rows))
+	for _, m := range rows {
+		out = append(out, domain.Deal{ID: m.ID, Title: m.Title, ContactID: m.ContactID, PipelineID: m.PipelineID, Stage: m.Stage, OwnerID: m.OwnerID, Amount: m.Amount, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt})
+	}
+	return out, nil
+}
+
+func (s *Store) DeleteContact(ctx context.Context, id string) error {
+	return s.db.WithContext(ctx).Delete(&ContactModel{}, "id = ?", id).Error
 }
 
 func (s *Store) CreateActivity(ctx context.Context, a *domain.Activity) error {

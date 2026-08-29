@@ -13,6 +13,7 @@ type Repository interface {
 
 	CreateContact(ctx context.Context, c *Contact) error
 	UpdateContact(ctx context.Context, c *Contact) error
+	DeleteContact(ctx context.Context, id string) error
 	FindContact(ctx context.Context, id string) (*Contact, error)
 	FindContactByEmail(ctx context.Context, email string) (*Contact, error)
 	ListContacts(ctx context.Context) ([]Contact, error)
@@ -24,6 +25,7 @@ type Repository interface {
 	UpdateDeal(ctx context.Context, d *Deal) error
 	FindDeal(ctx context.Context, id string) (*Deal, error)
 	ListDealsByContact(ctx context.Context, contactID string) ([]Deal, error)
+	ListDealsByPipeline(ctx context.Context, pipelineID string) ([]Deal, error)
 
 	CreateActivity(ctx context.Context, a *Activity) error
 	ListActivities(ctx context.Context, entityType, entityID string) ([]Activity, error)
