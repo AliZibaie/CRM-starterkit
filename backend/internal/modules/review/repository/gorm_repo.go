@@ -38,11 +38,26 @@ func (s *Store) ListByItem(ctx context.Context, itemID string) ([]domain.Review,
 	if err := s.db.WithContext(ctx).Where("item_id = ? AND is_visible = ?", itemID, true).Order("created_at desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
-	out := make([]domain.Review, 0, len(rows))
-	for _, r := range rows {
-		out = append(out, domain.Review{ID: r.ID, ItemID: r.ItemID, UserID: r.UserID, Rating: r.Rating, Comment: r.Comment, IsVisible: r.IsVisible, CreatedAt: r.CreatedAt})
+	return toReviews(rows), nil
+}
+
+func (s *Store) ListAll(ctx context.Context, f domain.ListFilter) ([]domain.Review, error) {
+	q := s.db.WithContext(ctx).Model(&Model{})
+	if f.ItemID != "" {
+		q = q.Where("item_id = ?", f.ItemID)
 	}
-	return out, nil
+	if f.Rating != nil {
+		q = q.Where("rating = ?", *f.Rating)
+	}
+	limit := f.Limit
+	if limit <= 0 {
+		limit = 100
+	}
+	var rows []Model
+	if err := q.Order("created_at desc").Limit(limit).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	return toReviews(rows), nil
 }
 
 func (s *Store) AverageRating(ctx context.Context, itemID string) (float64, error) {
@@ -53,4 +68,20 @@ func (s *Store) AverageRating(ctx context.Context, itemID string) (float64, erro
 
 func (s *Store) Delete(ctx context.Context, id, userID string) error {
 	return s.db.WithContext(ctx).Where("id = ? AND user_id = ?", id, userID).Delete(&Model{}).Error
+}
+
+func (s *Store) AdminDelete(ctx context.Context, id string) error {
+	return s.db.WithContext(ctx).Delete(&Model{}, "id = ?", id).Error
+}
+
+func (s *Store) SetVisibility(ctx context.Context, id string, visible bool) error {
+	return s.db.WithContext(ctx).Model(&Model{}).Where("id = ?", id).Update("is_visible", visible).Error
+}
+
+func toReviews(rows []Model) []domain.Review {
+	out := make([]domain.Review, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, domain.Review{ID: r.ID, ItemID: r.ItemID, UserID: r.UserID, Rating: r.Rating, Comment: r.Comment, IsVisible: r.IsVisible, CreatedAt: r.CreatedAt})
+	}
+	return out
 }

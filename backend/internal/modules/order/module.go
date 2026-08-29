@@ -52,5 +52,6 @@ func (m *Module) RegisterPermissions() []module.Permission {
 		{Key: "order.checkout", Name: "Checkout Order", Description: "Checkout orders", Module: "order"},
 		{Key: "order.discount", Name: "Apply Order Discount", Description: "Apply discount to order", Module: "order"},
 		{Key: "order.refund", Name: "Refund Order", Description: "Refund orders", Module: "order"},
+		{Key: "order.update", Name: "Update Order", Description: "Update order status", Module: "order"},
 	}
 }

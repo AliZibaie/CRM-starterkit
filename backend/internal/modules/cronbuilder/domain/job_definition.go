@@ -30,25 +30,25 @@ type JobAction struct {
 }
 
 type JobDefinition struct {
-	ID          string
-	Name        string
-	TableName   string
-	Condition   ConditionNode
-	Action      JobAction
-	CronExpr    string
-	IsActive    bool
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          string        `json:"id"`
+	Name        string        `json:"name"`
+	TableName   string        `json:"table_name"`
+	Condition   ConditionNode `json:"condition"`
+	Action      JobAction     `json:"action"`
+	CronExpr    string        `json:"cron_expr"`
+	IsActive    bool          `json:"is_active"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
 type JobExecutionLog struct {
-	ID           string
-	JobID        string
-	StartedAt    time.Time
-	FinishedAt   time.Time
-	Success      bool
-	AffectedRows int64
-	ErrorMessage string
+	ID           string    `json:"id"`
+	JobID        string    `json:"job_id"`
+	StartedAt    time.Time `json:"started_at"`
+	FinishedAt   time.Time `json:"finished_at"`
+	Success      bool      `json:"success"`
+	AffectedRows int64     `json:"affected_rows"`
+	ErrorMessage string    `json:"error_message"`
 }
 
 type ColumnMeta struct {

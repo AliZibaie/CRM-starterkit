@@ -87,8 +87,14 @@ async function request<T>(
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-  const json = (await res.json()) as ApiEnvelope<T>;
+  let res: Response;
+  let json: ApiEnvelope<T>;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    json = (await res.json()) as ApiEnvelope<T>;
+  } catch {
+    throw new ApiError("network_error", 0);
+  }
   if (
     res.status === 401 &&
     retry &&

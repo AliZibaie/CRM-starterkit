@@ -68,6 +68,14 @@ func (s *Store) FindPageBySlug(ctx context.Context, slug string) (*domain.Page, 
 	return &domain.Page{ID: m.ID, Slug: m.Slug, Title: m.Title, Status: m.Status, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
 }
 
+func (s *Store) FindPageByID(ctx context.Context, id string) (*domain.Page, error) {
+	var m PageModel
+	if err := s.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &domain.Page{ID: m.ID, Slug: m.Slug, Title: m.Title, Status: m.Status, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
+}
+
 func (s *Store) ListPages(ctx context.Context) ([]domain.Page, error) {
 	var rows []PageModel
 	if err := s.db.WithContext(ctx).Order("created_at desc").Find(&rows).Error; err != nil {
@@ -108,6 +116,14 @@ func (s *Store) ListBlocks(ctx context.Context, pageID string) ([]domain.Block, 
 
 func (s *Store) UpsertMenu(ctx context.Context, m *domain.Menu) error {
 	return s.db.WithContext(ctx).Save(&MenuModel{ID: m.ID, Name: m.Name, Location: m.Location, ItemsJSON: m.ItemsJSON, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}).Error
+}
+
+func (s *Store) FindMenuByName(ctx context.Context, name string) (*domain.Menu, error) {
+	var m MenuModel
+	if err := s.db.WithContext(ctx).First(&m, "name = ?", name).Error; err != nil {
+		return nil, err
+	}
+	return &domain.Menu{ID: m.ID, Name: m.Name, Location: m.Location, ItemsJSON: m.ItemsJSON, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
 }
 
 func (s *Store) ListMenus(ctx context.Context) ([]domain.Menu, error) {

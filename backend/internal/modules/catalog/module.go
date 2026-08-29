@@ -27,7 +27,7 @@ func (m *Module) Init(ctx context.Context, deps module.Dependencies) error {
 	if err := store.AutoMigrate(); err != nil {
 		return err
 	}
-	m.handler = httpdelivery.NewHandler(usecase.NewService(store), deps.Validate)
+	m.handler = httpdelivery.NewHandler(usecase.NewService(store, deps.Events), deps.Validate)
 	m.jwtManager = deps.JWT
 	return nil
 }

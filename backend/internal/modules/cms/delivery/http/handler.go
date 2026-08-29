@@ -107,12 +107,15 @@ func (h *Handler) SetBlocks(c *fiber.Ctx) error {
 // @Router /api/v1/cms/menus [post]
 func (h *Handler) UpsertMenu(c *fiber.Ctx) error {
 	var req struct {
-		Name, Location, ItemsJSON string
+		ID        string `json:"id"`
+		Name      string `json:"name"`
+		Location  string `json:"location"`
+		ItemsJSON string `json:"items_json"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
 	}
-	m, err := h.service.UpsertMenu(c.Context(), req.Name, req.Location, req.ItemsJSON)
+	m, err := h.service.UpsertMenu(c.Context(), req.ID, req.Name, req.Location, req.ItemsJSON)
 	if err != nil {
 		return response.Internal(c, err.Error())
 	}
@@ -142,7 +145,11 @@ func (h *Handler) ListMenus(c *fiber.Ctx) error {
 // @Router /api/v1/cms/seo [post]
 func (h *Handler) UpsertSEO(c *fiber.Ctx) error {
 	var req struct {
-		EntityType, EntityID, Title, Description, Keywords string
+		EntityType  string `json:"entity_type"`
+		EntityID    string `json:"entity_id"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		Keywords    string `json:"keywords"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return response.BadRequest(c, "invalid body", nil)
@@ -152,6 +159,30 @@ func (h *Handler) UpsertSEO(c *fiber.Ctx) error {
 		return response.Internal(c, err.Error())
 	}
 	return response.OK(c, meta)
+}
+
+func (h *Handler) GetPageByID(c *fiber.Ctx) error {
+	p, blocks, err := h.service.GetPageByID(c.Context(), c.Params("id"))
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, fiber.Map{"page": p, "blocks": blocks})
+}
+
+func (h *Handler) UpdatePage(c *fiber.Ctx) error {
+	var req struct {
+		Title  string `json:"title"`
+		Slug   string `json:"slug"`
+		Status string `json:"status"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	p, err := h.service.UpdatePage(c.Context(), c.Params("id"), req.Title, req.Slug, req.Status)
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, p)
 }
 
 // @Summary Get SEO meta
@@ -217,8 +248,11 @@ func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g := router.Group("/cms", middleware.Auth(jwt))
 	g.Post("/pages", middleware.RequireAnyPermission("cms.manage"), h.CreatePage)
 	g.Get("/pages", middleware.RequireAnyPermission("cms.manage"), h.ListPages)
+	g.Get("/pages/id/:id", middleware.RequireAnyPermission("cms.manage"), h.GetPageByID)
+	g.Put("/pages/:id", middleware.RequireAnyPermission("cms.manage"), h.UpdatePage)
 	g.Put("/pages/:id/blocks", middleware.RequireAnyPermission("cms.manage"), h.SetBlocks)
 	g.Post("/menus", middleware.RequireAnyPermission("cms.manage"), h.UpsertMenu)
+	g.Get("/menus/all", middleware.RequireAnyPermission("cms.manage"), h.ListMenus)
 	g.Post("/seo", middleware.RequireAnyPermission("cms.manage"), h.UpsertSEO)
 	g.Post("/faqs", middleware.RequireAnyPermission("cms.manage"), h.UpsertFAQ)
 }

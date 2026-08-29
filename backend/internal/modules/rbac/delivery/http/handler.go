@@ -174,6 +174,30 @@ func (h *Handler) ListPermissions(c *fiber.Ctx) error {
 	return response.OK(c, perms)
 }
 
+// @Summary Revoke permission from role
+// @Tags rbac
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param body body map[string]interface{} true "role_id permission_id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/rbac/revoke-permission [post]
+func (h *Handler) RevokePermissionFromRole(c *fiber.Ctx) error {
+	var req assignPermissionRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	if err := h.validate.Struct(req); err != nil {
+		return response.BadRequest(c, err.Error(), nil)
+	}
+	if err := h.service.RevokePermissionFromRole(c.Context(), req.RoleID, req.PermissionID); err != nil {
+		return mapRBACError(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "permission revoked from role", nil)
+}
+
 // @Summary Assign permission to role
 // @Tags rbac
 // @Security BearerAuth
@@ -249,6 +273,7 @@ func RegisterRoutes(router fiber.Router, h *Handler, jwtManager *jwtutil.Manager
 	g.Get("/permissions", middleware.RequireAnyPermission("rbac.permission.read"), h.ListPermissions)
 	g.Put("/permissions/:id", middleware.RequireAnyPermission("rbac.permission.edit"), h.EditPermission)
 	g.Post("/assign-permission", middleware.RequireAnyPermission("rbac.assign.permission"), h.AssignPermissionToRole)
+	g.Post("/revoke-permission", middleware.RequireAnyPermission("rbac.assign.permission"), h.RevokePermissionFromRole)
 	g.Post("/assign-role", middleware.RequireAnyPermission("rbac.assign.role"), h.AssignRoleToUser)
 	g.Post("/permissions/sync", middleware.RequireAnyPermission("rbac.permission.sync"), h.SyncPermissions)
 }

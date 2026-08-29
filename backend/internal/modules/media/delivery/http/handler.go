@@ -6,6 +6,7 @@ import (
 
 	"crm-starterkit/internal/core/http/middleware"
 	"crm-starterkit/internal/core/http/response"
+	"crm-starterkit/internal/modules/media/domain"
 	"crm-starterkit/internal/modules/media/usecase"
 	"crm-starterkit/pkg/jwtutil"
 
@@ -50,7 +51,13 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 // @Success 200 {array} map[string]interface{}
 // @Router /api/v1/media [get]
 func (h *Handler) ListMine(c *fiber.Ctx) error {
-	items, err := h.service.ListMine(c.Context(), middleware.UserIDFromContext(c))
+	var items []domain.Media
+	var err error
+	if c.Query("scope") == "all" {
+		items, err = h.service.ListAll(c.Context())
+	} else {
+		items, err = h.service.ListMine(c.Context(), middleware.UserIDFromContext(c))
+	}
 	if err != nil {
 		return response.Internal(c, err.Error())
 	}
@@ -66,7 +73,7 @@ func (h *Handler) ListMine(c *fiber.Ctx) error {
 // @Failure 404 {object} map[string]interface{}
 // @Router /api/v1/media/{id} [delete]
 func (h *Handler) Delete(c *fiber.Ctx) error {
-	if err := h.service.Delete(c.Context(), c.Params("id"), middleware.UserIDFromContext(c)); err != nil {
+	if err := h.service.Delete(c.Context(), c.Params("id"), ""); err != nil {
 		return mapErr(c, err)
 	}
 	return response.Message(c, fiber.StatusOK, "deleted", nil)

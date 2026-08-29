@@ -56,6 +56,18 @@ func (s *Store) ListByOwner(ctx context.Context, ownerID string) ([]domain.Media
 	return out, nil
 }
 
+func (s *Store) ListAll(ctx context.Context) ([]domain.Media, error) {
+	var rows []Model
+	if err := s.db.WithContext(ctx).Order("created_at desc").Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make([]domain.Media, 0, len(rows))
+	for i := range rows {
+		out = append(out, *toDomain(&rows[i]))
+	}
+	return out, nil
+}
+
 func (s *Store) Delete(ctx context.Context, id string) error {
 	return s.db.WithContext(ctx).Delete(&Model{}, "id = ?", id).Error
 }

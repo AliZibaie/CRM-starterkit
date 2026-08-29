@@ -55,6 +55,57 @@ func (s *Service) Create(ctx context.Context, in domain.CreateInput) (*domain.An
 	return a, nil
 }
 
+func (s *Service) Update(ctx context.Context, id string, in domain.CreateInput) (*domain.Announcement, error) {
+	a, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	if a.Status == "broadcasted" {
+		return nil, ErrInvalidInput
+	}
+	title := strings.TrimSpace(in.Title)
+	body := strings.TrimSpace(in.Body)
+	audience := strings.TrimSpace(in.Audience)
+	if title == "" || body == "" {
+		return nil, ErrInvalidInput
+	}
+	if audience == "" {
+		audience = domain.AudienceAll
+	}
+	if audience != domain.AudienceAll && audience != domain.AudienceRole && audience != domain.AudienceGroup {
+		return nil, ErrInvalidInput
+	}
+	if audience != domain.AudienceAll && strings.TrimSpace(in.AudienceRef) == "" {
+		return nil, ErrInvalidInput
+	}
+	a.Title = title
+	a.Body = body
+	a.Audience = audience
+	a.AudienceRef = strings.TrimSpace(in.AudienceRef)
+	a.UpdatedAt = time.Now().UTC()
+	if err := s.repo.Update(ctx, a); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+func (s *Service) Delete(ctx context.Context, id string) error {
+	a, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	if a.Status == "broadcasted" {
+		return ErrInvalidInput
+	}
+	return s.repo.Delete(ctx, id)
+}
+
 func (s *Service) ResolveAudience(a *domain.Announcement) map[string]any {
 	return map[string]any{
 		"type": a.Audience,

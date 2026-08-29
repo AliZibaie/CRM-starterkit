@@ -36,6 +36,7 @@ type Service struct {
 	gateways map[string]domain.Gateway
 	bus      *event.Bus
 	callback string
+	cfg      config.PaymentConfig
 }
 
 func NewService(repo domain.Repository, cfg config.PaymentConfig, bus *event.Bus) *Service {
@@ -51,15 +52,32 @@ func NewService(repo domain.Repository, cfg config.PaymentConfig, bus *event.Bus
 		gateways: gws,
 		bus:      bus,
 		callback: strings.TrimRight(cfg.CallbackBaseURL, "/"),
+		cfg:      cfg,
 	}
 }
 
-func (s *Service) ListGateways() []string {
-	out := make([]string, 0, len(s.gateways))
-	for name := range s.gateways {
-		out = append(out, name)
+func (s *Service) ListGatewayStatus() []domain.GatewayStatus {
+	defs := []struct {
+		name       string
+		configured bool
+	}{
+		{"zarinpal", s.cfg.ZarinpalMerchant != ""},
+		{"stripe", s.cfg.StripeSecretKey != ""},
+	}
+	out := make([]domain.GatewayStatus, 0, len(defs))
+	for _, d := range defs {
+		_, enabled := s.gateways[d.name]
+		out = append(out, domain.GatewayStatus{
+			Name:       d.name,
+			Configured: d.configured,
+			Enabled:    d.configured && enabled,
+		})
 	}
 	return out
+}
+
+func (s *Service) ListFailedPayments(ctx context.Context, limit int) ([]domain.Payment, error) {
+	return s.repo.ListByStatus(ctx, StatusFailed, limit)
 }
 
 func (s *Service) InitPayment(ctx context.Context, orderID, gatewayName, description string) (*domain.Payment, *domain.PayResult, error) {

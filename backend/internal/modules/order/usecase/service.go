@@ -209,6 +209,32 @@ func (s *Service) ListMine(ctx context.Context, userID string) ([]domain.Order, 
 	return s.repo.ListOrdersByUser(ctx, userID)
 }
 
+func (s *Service) ListAll(ctx context.Context, status, userID string, from, to *time.Time) ([]domain.Order, error) {
+	return s.repo.ListOrders(ctx, status, userID, from, to)
+}
+
+func (s *Service) UpdateStatus(ctx context.Context, orderID, status string) (*domain.Order, error) {
+	switch status {
+	case domain.StatusPending, domain.StatusPaid, domain.StatusProcessing, domain.StatusShipped,
+		domain.StatusDelivered, domain.StatusRefunded, domain.StatusCancelled:
+	default:
+		return nil, ErrBadStatus
+	}
+	order, err := s.repo.FindOrder(ctx, orderID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	order.Status = status
+	order.UpdatedAt = time.Now().UTC()
+	if err := s.repo.UpdateOrder(ctx, order); err != nil {
+		return nil, err
+	}
+	return order, nil
+}
+
 func (s *Service) BindPaymentEvents(bus *event.Bus) {
 	if bus == nil {
 		return

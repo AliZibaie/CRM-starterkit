@@ -37,6 +37,18 @@ func (s *Service) ListByItem(ctx context.Context, itemID string) ([]domain.Revie
 	return items, avg, err
 }
 
+func (s *Service) ListAll(ctx context.Context, itemID string, rating *int, limit int) ([]domain.Review, error) {
+	return s.repo.ListAll(ctx, domain.ListFilter{ItemID: itemID, Rating: rating, Limit: limit})
+}
+
+func (s *Service) SetVisibility(ctx context.Context, id string, visible bool) error {
+	return s.repo.SetVisibility(ctx, id, visible)
+}
+
+func (s *Service) AdminDelete(ctx context.Context, id string) error {
+	return s.repo.AdminDelete(ctx, id)
+}
+
 func (s *Service) Delete(ctx context.Context, id, userID string) error {
 	return s.repo.Delete(ctx, id, userID)
 }

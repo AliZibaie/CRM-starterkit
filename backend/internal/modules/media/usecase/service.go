@@ -131,5 +131,19 @@ func (s *Service) Delete(ctx context.Context, id, ownerID string) error {
 }
 
 func (s *Service) ListMine(ctx context.Context, ownerID string) ([]domain.Media, error) {
-	return s.repo.ListByOwner(ctx, ownerID)
+	return enrichFilenames(s.repo.ListByOwner(ctx, ownerID))
+}
+
+func (s *Service) ListAll(ctx context.Context) ([]domain.Media, error) {
+	return enrichFilenames(s.repo.ListAll(ctx))
+}
+
+func enrichFilenames(items []domain.Media, err error) ([]domain.Media, error) {
+	if err != nil {
+		return nil, err
+	}
+	for i := range items {
+		items[i].Filename = path.Base(items[i].Key)
+	}
+	return items, nil
 }

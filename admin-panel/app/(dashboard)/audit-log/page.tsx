@@ -6,6 +6,7 @@ import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { t } from "@/lib/i18n";
 import { formatJalaliDateTime } from "@/lib/date";
+import { datetimeLocalToRFC3339 } from "@/lib/datetime-input";
 import { DataTable } from "@/components/table/data-table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface AuditLog {
   id: string;
   action: string;
+  module: string;
   entity_type: string;
   entity_id: string;
   user_id: string;
@@ -25,8 +27,8 @@ export default function AuditLogPage() {
   const [module, setModule] = useState("");
   const [entityType, setEntityType] = useState("");
   const [entityId, setEntityId] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [fromLocal, setFromLocal] = useState("");
+  const [toLocal, setToLocal] = useState("");
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -34,11 +36,13 @@ export default function AuditLogPage() {
     if (module) params.set("module", module);
     if (entityType) params.set("entity_type", entityType);
     if (entityId) params.set("entity_id", entityId);
+    const from = datetimeLocalToRFC3339(fromLocal);
+    const to = datetimeLocalToRFC3339(toLocal);
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     params.set("limit", "100");
     return params.toString();
-  }, [actorId, module, entityType, entityId, from, to]);
+  }, [actorId, module, entityType, entityId, fromLocal, toLocal]);
 
   const { data = [], isLoading } = useQuery({
     queryKey: [...queryKeys.auditLogs, queryString],
@@ -78,11 +82,11 @@ export default function AuditLogPage() {
           </div>
           <div className="space-y-2">
             <Label>{t("common.from")}</Label>
-            <Input value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="datetime-local" value={fromLocal} onChange={(e) => setFromLocal(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>{t("common.to")}</Label>
-            <Input value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input type="datetime-local" value={toLocal} onChange={(e) => setToLocal(e.target.value)} />
           </div>
         </CardContent>
       </Card>
@@ -92,10 +96,11 @@ export default function AuditLogPage() {
         data={data as unknown as Record<string, unknown>[]}
         keyField="id"
         columns={[
+          { key: "module", header: t("common.module") },
           { key: "action", header: t("common.action") },
           { key: "entity_type", header: t("common.entityType") },
-          { key: "entity_id", header: t("common.entityId") },
-          { key: "user_id", header: t("common.userId") },
+          { key: "entity_id", header: t("common.entityId"), className: "font-mono text-xs" },
+          { key: "user_id", header: t("common.userId"), className: "font-mono text-xs" },
           {
             key: "created_at",
             header: t("common.createdAt"),

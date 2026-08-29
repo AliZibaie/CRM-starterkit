@@ -40,7 +40,15 @@ type verifyRequest struct {
 // @Success 200 {array} map[string]interface{}
 // @Router /api/v1/payments/gateways [get]
 func (h *Handler) ListGateways(c *fiber.Ctx) error {
-	return response.OK(c, h.service.ListGateways())
+	return response.OK(c, h.service.ListGatewayStatus())
+}
+
+func (h *Handler) ListFailed(c *fiber.Ctx) error {
+	items, err := h.service.ListFailedPayments(c.Context(), 50)
+	if err != nil {
+		return response.Internal(c, err.Error())
+	}
+	return response.OK(c, items)
 }
 
 // @Summary Init payment
@@ -145,6 +153,7 @@ func (h *Handler) Refund(c *fiber.Ctx) error {
 func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g := router.Group("/payments")
 	g.Get("/gateways", middleware.Auth(jwt), middleware.RequireAnyPermission("payment.init"), h.ListGateways)
+	g.Get("/failed", middleware.Auth(jwt), middleware.RequireAnyPermission("payment.verify"), h.ListFailed)
 	g.Post("/init", middleware.Auth(jwt), middleware.RequireAnyPermission("payment.init"), h.Init)
 	g.Post("/verify", middleware.Auth(jwt), middleware.RequireAnyPermission("payment.verify"), h.Verify)
 	g.Get("/callback/:gateway", h.Callback)

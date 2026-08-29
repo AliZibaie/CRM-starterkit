@@ -150,6 +150,10 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	return s.repo.Delete(ctx, id)
 }
 
+func (s *Service) RoleIDsByUser(ctx context.Context, userID string) ([]string, error) {
+	return s.repo.RoleIDsByUser(ctx, userID)
+}
+
 func (s *Service) AssignRoles(ctx context.Context, userID string, roleIDs []string) error {
 	_, err := s.repo.FindByID(ctx, userID)
 	if err != nil {

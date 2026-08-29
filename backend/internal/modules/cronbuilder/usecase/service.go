@@ -93,6 +93,70 @@ func (s *Service) CreateCronJob(ctx context.Context, in domain.CreateJobInput) (
 	return job, nil
 }
 
+func (s *Service) GetJob(ctx context.Context, id string) (*domain.JobDefinition, error) {
+	job, err := s.jobs.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrJobNotFound
+		}
+		return nil, err
+	}
+	return job, nil
+}
+
+func (s *Service) UpdateJob(ctx context.Context, id string, in domain.CreateJobInput) (*domain.JobDefinition, error) {
+	job, err := s.jobs.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrJobNotFound
+		}
+		return nil, err
+	}
+	name := strings.TrimSpace(in.Name)
+	if name == "" || strings.TrimSpace(in.CronExpr) == "" {
+		return nil, ErrInvalidInput
+	}
+	if !s.intro.IsTableAllowed(in.TableName) {
+		return nil, ErrInvalidTable
+	}
+	if !s.actions.Has(in.Action.Type) {
+		return nil, ErrInvalidAction
+	}
+	if _, err := cron.ParseStandard(in.CronExpr); err != nil {
+		parser := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
+		if _, err2 := parser.Parse(in.CronExpr); err2 != nil {
+			return nil, ErrInvalidCron
+		}
+	}
+	if _, err := engine.BuildCondition(in.TableName, in.Condition, s.intro); err != nil {
+		return nil, err
+	}
+	job.Name = name
+	job.TableName = in.TableName
+	job.Condition = in.Condition
+	job.Action = in.Action
+	job.CronExpr = in.CronExpr
+	job.IsActive = in.IsActive
+	job.UpdatedAt = time.Now().UTC()
+	if err := s.jobs.Update(ctx, job); err != nil {
+		return nil, err
+	}
+	if s.scheduler != nil {
+		_ = s.scheduler.Register(job)
+	}
+	return job, nil
+}
+
+func (s *Service) DeleteJob(ctx context.Context, id string) error {
+	if _, err := s.jobs.FindByID(ctx, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrJobNotFound
+		}
+		return err
+	}
+	return s.jobs.Delete(ctx, id)
+}
+
 func (s *Service) ListJobs(ctx context.Context) ([]domain.JobDefinition, error) {
 	return s.jobs.List(ctx)
 }

@@ -2,6 +2,7 @@ package httpdelivery
 
 import (
 	"errors"
+	"time"
 
 	"crm-starterkit/internal/core/http/middleware"
 	"crm-starterkit/internal/core/http/response"
@@ -117,25 +118,76 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 	return response.OK(c, fiber.Map{"order": order, "items": items, "invoice": invoice})
 }
 
-// @Summary List my orders
+// @Summary List orders
 // @Tags order
 // @Security BearerAuth
 // @Produce json
+// @Param status query string false "status"
+// @Param user_id query string false "user id"
+// @Param from query string false "from RFC3339"
+// @Param to query string false "to RFC3339"
+// @Param scope query string false "all for admin list"
 // @Success 200 {array} map[string]interface{}
 // @Router /api/v1/orders [get]
-func (h *Handler) ListMine(c *fiber.Ctx) error {
-	items, err := h.service.ListMine(c.Context(), middleware.UserIDFromContext(c))
+func (h *Handler) List(c *fiber.Ctx) error {
+	userID := middleware.UserIDFromContext(c)
+	if c.Query("scope") == "all" {
+		var from, to *time.Time
+		if v := c.Query("from"); v != "" {
+			tm, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return response.BadRequest(c, "invalid from date", nil)
+			}
+			from = &tm
+		}
+		if v := c.Query("to"); v != "" {
+			tm, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return response.BadRequest(c, "invalid to date", nil)
+			}
+			to = &tm
+		}
+		items, err := h.service.ListAll(c.Context(), c.Query("status"), c.Query("user_id"), from, to)
+		if err != nil {
+			return response.Internal(c, err.Error())
+		}
+		return response.OK(c, items)
+	}
+	items, err := h.service.ListMine(c.Context(), userID)
 	if err != nil {
 		return response.Internal(c, err.Error())
 	}
 	return response.OK(c, items)
 }
 
+// @Summary Update order status
+// @Tags order
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path string true "order id"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/orders/{id}/status [put]
+func (h *Handler) UpdateStatus(c *fiber.Ctx) error {
+	var req struct {
+		Status string `json:"status" validate:"required"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	order, err := h.service.UpdateStatus(c.Context(), c.Params("id"), req.Status)
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, order)
+}
+
 func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g := router.Group("/orders", middleware.Auth(jwt))
 	g.Post("/", middleware.RequireAnyPermission("order.create"), h.Create)
-	g.Get("/", middleware.RequireAnyPermission("order.read"), h.ListMine)
+	g.Get("/", middleware.RequireAnyPermission("order.read"), h.List)
 	g.Get("/:id", middleware.RequireAnyPermission("order.read"), h.Get)
+	g.Put("/:id/status", middleware.RequireAnyPermission("order.update"), h.UpdateStatus)
 	g.Post("/:id/checkout", middleware.RequireAnyPermission("order.checkout"), h.Checkout)
 	g.Post("/:id/discount", middleware.RequireAnyPermission("order.discount"), h.ApplyDiscount)
 	g.Post("/:id/refund", middleware.RequireAnyPermission("order.refund"), h.Refund)

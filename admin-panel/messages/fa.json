@@ -28,6 +28,7 @@
     "orders": "سفارش‌ها",
     "paymentGateways": "درگاه‌های پرداخت",
     "discounts": "تخفیف‌ها",
+    "reviews": "نظرات",
     "crm": "CRM",
     "leads": "سرنخ‌ها",
     "pipeline": "قیف فروش",
@@ -80,7 +81,20 @@
     "key": "کلید",
     "value": "مقدار",
     "view": "مشاهده",
+    "open": "باز کردن",
     "assign": "اختصاص",
+    "assignAgent": "اختصاص به پشتیبان",
+    "uploadImage": "آپلود تصویر",
+    "editJob": "ویرایش جاب",
+    "linkUrl": "لینک",
+    "allStatuses": "همه وضعیت‌ها",
+    "allDepartments": "همه دپارتمان‌ها",
+    "allPriorities": "همه اولویت‌ها",
+    "normal": "عادی",
+    "low": "کم",
+    "medium": "متوسط",
+    "high": "زیاد",
+    "audience": "مخاطب",
     "module": "ماژول",
     "code": "کد",
     "phone": "تلفن",
@@ -91,6 +105,15 @@
     "action": "عملیات",
     "error": "خطا",
     "success": "موفق",
+    "networkError": "اتصال به سرور برقرار نیست. لطفاً دوباره تلاش کنید.",
+    "confirmDelete": "تأیید حذف",
+    "confirmDeleteMessage": "آیا از حذف این مورد مطمئن هستید؟",
+    "selectUser": "انتخاب کاربر",
+    "roles": "نقش‌ها",
+    "previous": "قبلی",
+    "next": "بعدی",
+    "pageOf": "صفحه {page} از {total}",
+    "operationSuccess": "عملیات با موفقیت انجام شد.",
     "started": "شروع",
     "finished": "پایان",
     "upload": "آپلود",
@@ -182,7 +205,20 @@
   "status": {
     "open": "باز",
     "pending": "در انتظار",
-    "resolved": "حل‌شده"
+    "in_progress": "در حال بررسی",
+    "resolved": "حل‌شده",
+    "closed": "بسته"
+  },
+  "announcementStatus": {
+    "draft": "پیش‌نویس",
+    "broadcasted": "منتشرشده"
+  },
+  "audience": {
+    "all": "همه کاربران",
+    "role": "نقش خاص",
+    "group": "گروه خاص",
+    "refRole": "شناسه نقش",
+    "refGroup": "شناسه گروه"
   },
   "header": {
     "searchPlaceholder": "جستجو در پنل..."
@@ -199,6 +235,7 @@
     "column": "ستون",
     "buildCondition": "ساخت شرط",
     "addRule": "افزودن قانون",
+    "addNestedGroup": "افزودن گروه تودرتو",
     "remove": "حذف",
     "eq": "برابر",
     "neq": "نابرابر",
@@ -230,7 +267,9 @@
       "create": "ایجاد کاربر",
       "addUser": "افزودن کاربر",
       "editUser": "ویرایش کاربر",
-      "fullName": "نام کامل"
+      "fullName": "نام کامل",
+      "newPassword": "رمز عبور جدید (اختیاری)",
+      "assignRoles": "نقش‌های کاربر"
     },
     "roles": {
       "title": "نقش‌ها و دسترسی‌ها",
@@ -244,12 +283,13 @@
       "roleDetail": "جزئیات نقش",
       "rolesList": "نقش‌ها",
       "permissionsList": "دسترسی‌ها",
-      "updateSetting": "بروزرسانی تنظیم"
+      "managePermissions": "مدیریت دسترسی‌های نقش"
     },
     "settings": {
       "title": "تنظیمات",
       "subtitle": "تنظیمات کلید-مقدار",
-      "updateSetting": "بروزرسانی تنظیم"
+      "updateSetting": "بروزرسانی تنظیم",
+      "editHint": "برای ویرایش، روی یک ردیف در جدول کلیک کنید."
     },
     "cronBuilder": {
       "title": "سازنده کرون",
@@ -282,8 +322,12 @@
       "subtitle": "مدیریت صفحات",
       "create": "ایجاد صفحه",
       "createPage": "ایجاد صفحه",
+      "editPage": "ویرایش صفحه",
       "setPageBlocks": "تنظیم بلوک‌های صفحه",
-      "saveBlocks": "ذخیره بلوک‌ها"
+      "saveBlocks": "ذخیره بلوک‌ها",
+      "blocks": "بلوک‌های محتوا",
+      "seoTitle": "عنوان SEO",
+      "seoDescription": "توضیح SEO"
     },
     "cmsMenus": {
       "title": "منوهای CMS",
@@ -318,13 +362,19 @@
       "subtitle": "مدیریت کاتalog",
       "create": "ایجاد محصول",
       "addProduct": "افزودن محصول",
-      "createProduct": "ایجاد محصول"
+      "createProduct": "ایجاد محصول",
+      "images": "تصاویر",
+      "attributes": "ویژگی‌ها",
+      "variants": "تنوع‌ها",
+      "initialStock": "موجودی اولیه"
     },
     "categories": {
       "title": "دسته‌بندی‌ها",
       "subtitle": "مدیریت دسته‌بندی",
       "create": "ایجاد دسته‌بندی",
-      "createCategory": "ایجاد دسته‌بندی"
+      "createCategory": "ایجاد دسته‌بندی",
+      "parentCategory": "دسته والد",
+      "noParent": "بدون والد"
     },
     "inventory": {
       "title": "موجودی",
@@ -333,18 +383,34 @@
     },
     "orders": {
       "title": "سفارش‌ها",
-      "subtitle": "لیست سفارش‌ها"
+      "subtitle": "لیست سفارش‌ها",
+      "orderDetails": "جزئیات سفارش",
+      "subtotal": "جمع جزء",
+      "discount": "تخفیف",
+      "items": "آیتم‌ها",
+      "invoice": "فاکتور"
     },
     "payments": {
       "title": "درگاه‌های پرداخت",
-      "subtitle": "وضعیت درگاه‌ها"
+      "subtitle": "وضعیت درگاه‌ها",
+      "failedTransactions": "تراکنش‌های ناموفق"
     },
     "discounts": {
       "title": "تخفیف‌ها",
       "subtitle": "مدیریت کدهای تخفیف",
       "create": "ایجاد تخفیف",
       "createDiscount": "ایجاد تخفیف",
-      "previewDiscount": "پیش‌نمایش تخفیف"
+      "previewDiscount": "پیش‌نمایش تخفیف",
+      "percent": "درصدی",
+      "fixed": "مبلغ ثابت",
+      "percentValue": "درصد (۱–۱۰۰)",
+      "maxUses": "حداکثر استفاده (۰ = نامحدود)",
+      "minOrder": "حداقل مبلغ سفارش (سنت)",
+      "expired": "منقضی",
+      "maxUsesReached": "سقف استفاده",
+      "usage": "استفاده",
+      "discountAmount": "مبلغ تخفیف",
+      "finalAmount": "مبلغ نهایی"
     },
     "leads": {
       "title": "سرنخ‌ها",
@@ -367,14 +433,30 @@
     },
     "contacts": {
       "title": "مخاطبین",
-      "subtitle": "لیست مخاطبین CRM"
+      "subtitle": "لیست مخاطبین CRM",
+      "create": "ایجاد مخاطب",
+      "activity": "فعالیت",
+      "logActivity": "ثبت فعالیت",
+      "activityCall": "تماس",
+      "activityMeeting": "جلسه",
+      "customer360": "نمای ۳۶۰ مشتری"
     },
     "tasks": {
       "title": "وظایف",
       "subtitle": "ایجاد یادآور وظایف",
       "create": "ایجاد وظیفه",
       "createReminder": "ایجاد یادآور وظیفه",
-      "createTask": "ایجاد وظیفه"
+      "createTask": "ایجاد وظیفه",
+      "dueAtLocal": "موعد یادآور"
+    },
+    "reviews": {
+      "title": "مدیریت نظرات",
+      "subtitle": "تأیید و حذف نظرات محصول",
+      "rating": "امتیاز",
+      "approve": "تأیید",
+      "reject": "رد",
+      "approved": "تأیید‌شده",
+      "pending": "در انتظار"
     },
     "auditLog": {
       "title": "لاگ ممیزی",
@@ -387,7 +469,8 @@
       "avgDuration": "میانگین مدت",
       "errors": "خطاها",
       "suspicious": "مشکوک",
-      "totalRequests": "کل درخواست‌ها"
+      "totalRequests": "کل درخواست‌ها",
+      "geo": "موقعیت (کشور/شهر)"
     }
   }
 }

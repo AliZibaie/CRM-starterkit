@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
+import { getApiErrorMessage } from "@/lib/api-error-message";
 import { queryKeys } from "@/lib/query-keys";
 import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,11 @@ interface Pipeline {
   stages_json: string;
 }
 
+interface Contact {
+  id: string;
+  name: string;
+}
+
 interface Deal {
   id: string;
   title: string;
@@ -35,15 +41,13 @@ interface Deal {
 export default function PipelinePage() {
   const queryClient = useQueryClient();
   const [pipelineName, setPipelineName] = useState("");
-  const [stagesJson, setStagesJson] = useState(
-    '["lead","qualified","proposal","won","lost"]'
-  );
+  const [stagesJson, setStagesJson] = useState('["lead","qualified","proposal","won","lost"]');
   const [dealTitle, setDealTitle] = useState("");
   const [contactId, setContactId] = useState("");
   const [pipelineId, setPipelineId] = useState("");
   const [stage, setStage] = useState("");
-  const [deals, setDeals] = useState<Deal[]>([]);
   const [dragDealId, setDragDealId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
   const { data: pipelines = [] } = useQuery({
     queryKey: queryKeys.pipelines,
@@ -51,6 +55,23 @@ export default function PipelinePage() {
       const res = await api.get<Pipeline[]>("/crm/pipelines");
       return res.data ?? [];
     },
+  });
+
+  const { data: contacts = [] } = useQuery({
+    queryKey: queryKeys.contacts,
+    queryFn: async () => {
+      const res = await api.get<Contact[]>("/crm/contacts");
+      return res.data ?? [];
+    },
+  });
+
+  const { data: deals = [] } = useQuery({
+    queryKey: queryKeys.deals(pipelineId),
+    queryFn: async () => {
+      const res = await api.get<Deal[]>(`/crm/deals?pipeline_id=${pipelineId}`);
+      return res.data ?? [];
+    },
+    enabled: !!pipelineId,
   });
 
   const selectedPipeline = pipelines.find((p) => p.id === pipelineId);
@@ -68,56 +89,52 @@ export default function PipelinePage() {
     stages.forEach((s) => {
       map[s] = [];
     });
-    deals
-      .filter((d) => d.pipeline_id === pipelineId)
-      .forEach((d) => {
-        if (map[d.stage]) map[d.stage].push(d);
-        else map[d.stage] = [d];
-      });
+    deals.forEach((d) => {
+      if (map[d.stage]) map[d.stage].push(d);
+      else map[d.stage] = [d];
+    });
     return map;
-  }, [deals, pipelineId, stages]);
+  }, [deals, stages]);
 
   const upsertPipeline = useMutation({
     mutationFn: async () => {
-      await api.post("/crm/pipelines", {
-        name: pipelineName,
-        stages_json: stagesJson,
-      });
+      await api.post("/crm/pipelines", { name: pipelineName, stages_json: stagesJson });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pipelines });
       setPipelineName("");
+      setFeedback({ type: "success", text: t("common.operationSuccess") });
     },
+    onError: (err) => setFeedback({ type: "error", text: getApiErrorMessage(err) }),
   });
 
   const createDeal = useMutation({
     mutationFn: async () => {
-      const res = await api.post<Deal>("/crm/deals", {
+      await api.post("/crm/deals", {
         title: dealTitle,
         contact_id: contactId,
         pipeline_id: pipelineId,
         stage,
         amount: 0,
       });
-      return res.data!;
     },
-    onSuccess: (deal) => {
-      setDeals((prev) => [...prev, deal]);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deals(pipelineId) });
       setDealTitle("");
       setContactId("");
+      setFeedback({ type: "success", text: t("common.operationSuccess") });
     },
+    onError: (err) => setFeedback({ type: "error", text: getApiErrorMessage(err) }),
   });
 
   const moveDeal = useMutation({
     mutationFn: async ({ id, newStage }: { id: string; newStage: string }) => {
-      const res = await api.post<Deal>(`/crm/deals/${id}/stage`, {
-        stage: newStage,
-      });
-      return res.data!;
+      await api.post(`/crm/deals/${id}/stage`, { stage: newStage });
     },
-    onSuccess: (deal) => {
-      setDeals((prev) => prev.map((d) => (d.id === deal.id ? deal : d)));
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deals(pipelineId) });
     },
+    onError: (err) => setFeedback({ type: "error", text: getApiErrorMessage(err) }),
   });
 
   const handleDrop = (targetStage: string) => {
@@ -138,6 +155,18 @@ export default function PipelinePage() {
         <p className="text-muted-foreground">{t("pages.pipeline.subtitle")}</p>
       </div>
 
+      {feedback && (
+        <div
+          className={`rounded-md border px-4 py-3 text-sm ${
+            feedback.type === "error"
+              ? "border-destructive/50 bg-destructive/10 text-destructive"
+              : "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+          }`}
+        >
+          {feedback.text}
+        </div>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -146,22 +175,13 @@ export default function PipelinePage() {
           <CardContent className="space-y-3">
             <div className="space-y-2">
               <Label>{t("common.name")}</Label>
-              <Input
-                value={pipelineName}
-                onChange={(e) => setPipelineName(e.target.value)}
-              />
+              <Input value={pipelineName} onChange={(e) => setPipelineName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>{t("pages.pipeline.stagesJson")}</Label>
-              <Input
-                value={stagesJson}
-                onChange={(e) => setStagesJson(e.target.value)}
-              />
+              <Input value={stagesJson} onChange={(e) => setStagesJson(e.target.value)} />
             </div>
-            <Button
-              onClick={() => upsertPipeline.mutate()}
-              disabled={upsertPipeline.isPending}
-            >
+            <Button onClick={() => upsertPipeline.mutate()} disabled={upsertPipeline.isPending}>
               {t("pages.pipeline.savePipeline")}
             </Button>
           </CardContent>
@@ -190,16 +210,19 @@ export default function PipelinePage() {
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              placeholder={t("common.title")}
-              value={dealTitle}
-              onChange={(e) => setDealTitle(e.target.value)}
-            />
-            <Input
-              placeholder={t("pages.pipeline.contactId")}
-              value={contactId}
-              onChange={(e) => setContactId(e.target.value)}
-            />
+            <Input placeholder={t("common.title")} value={dealTitle} onChange={(e) => setDealTitle(e.target.value)} />
+            <Select value={contactId} onValueChange={setContactId}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("pages.pipeline.contactId")} />
+              </SelectTrigger>
+              <SelectContent>
+                {contacts.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={stage} onValueChange={setStage}>
               <SelectTrigger>
                 <SelectValue placeholder={t("common.selectStage")} />
@@ -214,9 +237,7 @@ export default function PipelinePage() {
             </Select>
             <Button
               onClick={() => createDeal.mutate()}
-              disabled={
-                createDeal.isPending || !dealTitle || !pipelineId || !stage
-              }
+              disabled={createDeal.isPending || !dealTitle || !pipelineId || !stage}
             >
               {t("pages.pipeline.createDeal")}
             </Button>
@@ -247,13 +268,10 @@ export default function PipelinePage() {
                       className="cursor-grab rounded-md border border-border bg-background p-3 text-sm shadow-sm active:cursor-grabbing"
                     >
                       <p className="font-medium">{deal.title}</p>
-                      <p className="text-xs text-muted-foreground">{deal.id}</p>
                     </div>
                   ))}
                   {(dealsByStage[s] ?? []).length === 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      {t("pages.pipeline.dropHere")}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{t("pages.pipeline.dropHere")}</p>
                   )}
                 </CardContent>
               </Card>

@@ -6,6 +6,7 @@ import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { t } from "@/lib/i18n";
 import { formatGregorianDateTime } from "@/lib/date";
+import { datetimeLocalToRFC3339 } from "@/lib/datetime-input";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ interface RequestLog {
   status: number;
   user_id: string;
   duration_ms: number;
+  country?: string;
+  city?: string;
   suspicious: boolean;
   created_at: string;
 }
@@ -37,20 +40,13 @@ export default function RequestMonitorPage() {
   const [path, setPath] = useState("");
   const [status, setStatus] = useState("");
   const [userId, setUserId] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [fromLocal, setFromLocal] = useState("");
+  const [toLocal, setToLocal] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   const filters = useMemo(
-    () => ({
-      ip,
-      path,
-      status,
-      user_id: userId,
-      from,
-      to,
-    }),
-    [ip, path, status, userId, from, to]
+    () => ({ ip, path, status, user_id: userId, from: fromLocal, to: toLocal }),
+    [ip, path, status, userId, fromLocal, toLocal]
   );
 
   const queryString = useMemo(() => {
@@ -59,21 +55,25 @@ export default function RequestMonitorPage() {
     if (path) params.set("path", path);
     if (status) params.set("status", status);
     if (userId) params.set("user_id", userId);
+    const from = datetimeLocalToRFC3339(fromLocal);
+    const to = datetimeLocalToRFC3339(toLocal);
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     params.set("limit", "100");
     return params.toString();
-  }, [ip, path, status, userId, from, to]);
+  }, [ip, path, status, userId, fromLocal, toLocal]);
 
   const statsQueryString = useMemo(() => {
     const params = new URLSearchParams();
     if (ip) params.set("ip", ip);
     if (path) params.set("path", path);
     if (userId) params.set("user_id", userId);
+    const from = datetimeLocalToRFC3339(fromLocal);
+    const to = datetimeLocalToRFC3339(toLocal);
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     return params.toString();
-  }, [ip, path, userId, from, to]);
+  }, [ip, path, userId, fromLocal, toLocal]);
 
   const { data = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: queryKeys.requestLogs(filters),
@@ -87,9 +87,7 @@ export default function RequestMonitorPage() {
   const { data: stats } = useQuery({
     queryKey: queryKeys.requestStats(filters),
     queryFn: async () => {
-      const res = await api.get<RequestStats>(
-        `/request-logs/stats?${statsQueryString}`
-      );
+      const res = await api.get<RequestStats>(`/request-logs/stats?${statsQueryString}`);
       return res.data;
     },
     refetchInterval: autoRefresh ? 5000 : false,
@@ -106,11 +104,7 @@ export default function RequestMonitorPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant={autoRefresh ? "default" : "outline"}
-            size="sm"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
+          <Button variant={autoRefresh ? "default" : "outline"} size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
             {autoRefresh ? t("common.autoRefreshOn") : t("common.autoRefreshOff")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -123,9 +117,7 @@ export default function RequestMonitorPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("pages.requestMonitor.totalRequests")}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.totalRequests")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.total}</p>
@@ -133,9 +125,7 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("pages.requestMonitor.avgDuration")}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.avgDuration")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.avg_duration_ms} ms</p>
@@ -143,9 +133,7 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("pages.requestMonitor.errors")}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.errors")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.error_count}</p>
@@ -153,9 +141,7 @@ export default function RequestMonitorPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("pages.requestMonitor.suspicious")}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{t("pages.requestMonitor.suspicious")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{stats.suspicious_count}</p>
@@ -187,11 +173,11 @@ export default function RequestMonitorPage() {
           </div>
           <div className="space-y-2">
             <Label>{t("common.from")}</Label>
-            <Input value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="datetime-local" value={fromLocal} onChange={(e) => setFromLocal(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>{t("common.to")}</Label>
-            <Input value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input type="datetime-local" value={toLocal} onChange={(e) => setToLocal(e.target.value)} />
           </div>
         </CardContent>
       </Card>
@@ -207,6 +193,15 @@ export default function RequestMonitorPage() {
             render: (row) => formatGregorianDateTime(row.created_at as string),
           },
           { key: "ip", header: t("common.ip") },
+          {
+            key: "geo",
+            header: t("pages.requestMonitor.geo"),
+            render: (row) => {
+              const country = row.country as string;
+              const city = row.city as string;
+              return country || city ? `${country || "—"} / ${city || "—"}` : "—";
+            },
+          },
           { key: "method", header: t("common.method") },
           { key: "path", header: t("common.path") },
           {
@@ -214,22 +209,17 @@ export default function RequestMonitorPage() {
             header: t("common.status"),
             render: (row) => {
               const s = row.status as number;
-              const variant =
-                s >= 500 ? "destructive" : s >= 400 ? "secondary" : "success";
+              const variant = s >= 500 ? "destructive" : s >= 400 ? "secondary" : "success";
               return <Badge variant={variant}>{s}</Badge>;
             },
           },
-          { key: "user_id", header: t("common.userId") },
+          { key: "user_id", header: t("common.userId"), className: "font-mono text-xs" },
           { key: "duration_ms", header: t("common.durationMs") },
           {
             key: "suspicious",
             header: t("common.suspicious"),
             render: (row) =>
-              row.suspicious ? (
-                <Badge variant="destructive">{t("common.yes")}</Badge>
-              ) : (
-                t("common.no")
-              ),
+              row.suspicious ? <Badge variant="destructive">{t("common.yes")}</Badge> : t("common.no"),
           },
         ]}
       />

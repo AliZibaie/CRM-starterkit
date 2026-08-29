@@ -79,6 +79,44 @@ func (s *Service) ApplyAndConsume(ctx context.Context, code string, orderAmount 
 	return &domain.ApplyResult{Code: d.Code, DiscountAmount: amount, FinalAmount: orderAmount - amount}, nil
 }
 
+func (s *Service) Update(ctx context.Context, id string, typ string, value, minAmount, maxUses int64, starts, ends *time.Time, isActive bool) (*domain.Discount, error) {
+	d, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	if typ != domain.TypePercent && typ != domain.TypeFixed {
+		return nil, ErrInvalidInput
+	}
+	if value <= 0 || (typ == domain.TypePercent && value > 100) {
+		return nil, ErrInvalidInput
+	}
+	d.Type = typ
+	d.Value = value
+	d.MinOrderAmount = minAmount
+	d.MaxUses = maxUses
+	d.StartsAt = starts
+	d.EndsAt = ends
+	d.IsActive = isActive
+	d.UpdatedAt = time.Now().UTC()
+	if err := s.repo.Update(ctx, d); err != nil {
+		return nil, err
+	}
+	return d, nil
+}
+
+func (s *Service) Delete(ctx context.Context, id string) error {
+	if _, err := s.repo.FindByID(ctx, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	return s.repo.Delete(ctx, id)
+}
+
 func (s *Service) calculate(d *domain.Discount, orderAmount int64) (int64, error) {
 	now := time.Now().UTC()
 	if !d.IsActive {

@@ -19,6 +19,7 @@ const protectedPrefixes = [
   "/payments",
   "/discounts",
   "/crm",
+  "/reviews",
   "/request-monitor",
   "/audit-log",
 ];

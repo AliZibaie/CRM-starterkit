@@ -82,6 +82,28 @@ func (s *Store) CreateCategory(ctx context.Context, c *domain.Category) error {
 	return s.db.WithContext(ctx).Create(&CategoryModel{ID: c.ID, Name: c.Name, Slug: c.Slug, ParentID: c.ParentID, CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt}).Error
 }
 
+func (s *Store) UpdateCategory(ctx context.Context, c *domain.Category) error {
+	return s.db.WithContext(ctx).Save(&CategoryModel{ID: c.ID, Name: c.Name, Slug: c.Slug, ParentID: c.ParentID, CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt}).Error
+}
+
+func (s *Store) DeleteCategory(ctx context.Context, id string) error {
+	return s.db.WithContext(ctx).Delete(&CategoryModel{}, "id = ?", id).Error
+}
+
+func (s *Store) FindCategoryByID(ctx context.Context, id string) (*domain.Category, error) {
+	var m CategoryModel
+	if err := s.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &domain.Category{ID: m.ID, Name: m.Name, Slug: m.Slug, ParentID: m.ParentID, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}, nil
+}
+
+func (s *Store) CountItemsByCategory(ctx context.Context, categoryID string) (int64, error) {
+	var count int64
+	err := s.db.WithContext(ctx).Model(&ItemModel{}).Where("category_id = ?", categoryID).Count(&count).Error
+	return count, err
+}
+
 func (s *Store) ListCategories(ctx context.Context) ([]domain.Category, error) {
 	var rows []CategoryModel
 	if err := s.db.WithContext(ctx).Order("name asc").Find(&rows).Error; err != nil {
@@ -100,6 +122,36 @@ func (s *Store) CreateItem(ctx context.Context, item *domain.Item) error {
 
 func (s *Store) UpdateItem(ctx context.Context, item *domain.Item) error {
 	return s.db.WithContext(ctx).Save(itemModel(item)).Error
+}
+
+func (s *Store) DeleteItem(ctx context.Context, id string) error {
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("item_id = ?", id).Delete(&AttributeModel{}).Error; err != nil {
+			return err
+		}
+		var variantIDs []string
+		if err := tx.Model(&VariantModel{}).Where("item_id = ?", id).Pluck("id", &variantIDs).Error; err != nil {
+			return err
+		}
+		if len(variantIDs) > 0 {
+			if err := tx.Where("variant_id IN ?", variantIDs).Delete(&InventoryModel{}).Error; err != nil {
+				return err
+			}
+		}
+		if err := tx.Where("item_id = ?", id).Delete(&VariantModel{}).Error; err != nil {
+			return err
+		}
+		return tx.Delete(&ItemModel{}, "id = ?", id).Error
+	})
+}
+
+func (s *Store) ItemReferencedInOrders(ctx context.Context, itemID string) (bool, error) {
+	var count int64
+	err := s.db.WithContext(ctx).Table("order_items").
+		Joins("JOIN orders ON orders.id = order_items.order_id").
+		Where("order_items.item_id = ? AND orders.status NOT IN ?", itemID, []string{"refunded", "cancelled"}).
+		Count(&count).Error
+	return count > 0, err
 }
 
 func (s *Store) FindItemBySlug(ctx context.Context, slug string) (*domain.Item, error) {

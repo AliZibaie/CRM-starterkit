@@ -81,6 +81,7 @@ const navGroups = [
       { href: "/orders", labelKey: "nav.orders", icon: ShoppingCart },
       { href: "/payments/gateways-status", labelKey: "nav.paymentGateways", icon: CreditCard },
       { href: "/discounts", labelKey: "nav.discounts", icon: Percent },
+      { href: "/reviews", labelKey: "nav.reviews", icon: Tag },
     ],
   },
   {

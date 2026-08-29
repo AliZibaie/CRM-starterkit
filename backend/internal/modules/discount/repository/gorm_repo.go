@@ -71,6 +71,14 @@ func (s *Store) IncrementUsage(ctx context.Context, id string) error {
 	}).Error
 }
 
+func (s *Store) Update(ctx context.Context, d *domain.Discount) error {
+	return s.db.WithContext(ctx).Save(toModel(d)).Error
+}
+
+func (s *Store) Delete(ctx context.Context, id string) error {
+	return s.db.WithContext(ctx).Delete(&Model{}, "id = ?", id).Error
+}
+
 func toModel(d *domain.Discount) *Model {
 	return &Model{
 		ID: d.ID, Code: d.Code, Type: d.Type, Value: d.Value, MinOrderAmount: d.MinOrderAmount,

@@ -59,6 +59,16 @@ func (s *Store) CreateDepartment(ctx context.Context, d *domain.Department) erro
 	}).Error
 }
 
+func (s *Store) UpdateDepartment(ctx context.Context, d *domain.Department) error {
+	return s.db.WithContext(ctx).Save(&DepartmentModel{
+		ID: d.ID, Name: d.Name, Description: d.Description, CreatedAt: d.CreatedAt, UpdatedAt: d.UpdatedAt,
+	}).Error
+}
+
+func (s *Store) DeleteDepartment(ctx context.Context, id string) error {
+	return s.db.WithContext(ctx).Delete(&DepartmentModel{}, "id = ?", id).Error
+}
+
 func (s *Store) ListDepartments(ctx context.Context) ([]domain.Department, error) {
 	var rows []DepartmentModel
 	if err := s.db.WithContext(ctx).Order("name asc").Find(&rows).Error; err != nil {
@@ -95,9 +105,19 @@ func (s *Store) FindTicket(ctx context.Context, id string) (*domain.Ticket, erro
 	return ticketDomain(&m), nil
 }
 
-func (s *Store) ListTickets(ctx context.Context) ([]domain.Ticket, error) {
+func (s *Store) ListTickets(ctx context.Context, status, departmentID, priority string) ([]domain.Ticket, error) {
+	q := s.db.WithContext(ctx).Model(&TicketModel{})
+	if status != "" {
+		q = q.Where("status = ?", status)
+	}
+	if departmentID != "" {
+		q = q.Where("department_id = ?", departmentID)
+	}
+	if priority != "" {
+		q = q.Where("priority = ?", priority)
+	}
 	var rows []TicketModel
-	if err := s.db.WithContext(ctx).Order("created_at desc").Find(&rows).Error; err != nil {
+	if err := q.Order("created_at desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
 	out := make([]domain.Ticket, 0, len(rows))

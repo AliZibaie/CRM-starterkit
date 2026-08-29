@@ -1,12 +1,16 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Repository interface {
 	CreateOrder(ctx context.Context, order *Order, items []OrderItem, invoice *Invoice) error
 	UpdateOrder(ctx context.Context, order *Order) error
 	FindOrder(ctx context.Context, id string) (*Order, error)
 	ListOrdersByUser(ctx context.Context, userID string) ([]Order, error)
+	ListOrders(ctx context.Context, status, userID string, from, to *time.Time) ([]Order, error)
 	ListOrderItems(ctx context.Context, orderID string) ([]OrderItem, error)
 	FindInvoiceByOrder(ctx context.Context, orderID string) (*Invoice, error)
 	UpdateInvoice(ctx context.Context, inv *Invoice) error

@@ -131,6 +131,20 @@ func (s *Service) ListPermissions(ctx context.Context) ([]domain.Permission, err
 }
 
 func (s *Service) AssignPermissionToRole(ctx context.Context, roleID, permissionID string) error {
+	if err := s.ensureRolePermission(ctx, roleID, permissionID); err != nil {
+		return err
+	}
+	return s.repo.AssignPermissionToRole(ctx, roleID, permissionID)
+}
+
+func (s *Service) RevokePermissionFromRole(ctx context.Context, roleID, permissionID string) error {
+	if err := s.ensureRolePermission(ctx, roleID, permissionID); err != nil {
+		return err
+	}
+	return s.repo.RemovePermissionFromRole(ctx, roleID, permissionID)
+}
+
+func (s *Service) ensureRolePermission(ctx context.Context, roleID, permissionID string) error {
 	if _, err := s.repo.FindRoleByID(ctx, roleID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrRoleNotFound
@@ -143,7 +157,7 @@ func (s *Service) AssignPermissionToRole(ctx context.Context, roleID, permission
 		}
 		return err
 	}
-	return s.repo.AssignPermissionToRole(ctx, roleID, permissionID)
+	return nil
 }
 
 func (s *Service) AssignRoleToUser(ctx context.Context, userID, roleID string) error {

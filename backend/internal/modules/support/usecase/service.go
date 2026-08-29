@@ -47,6 +47,37 @@ func (s *Service) ListDepartments(ctx context.Context) ([]domain.Department, err
 	return s.repo.ListDepartments(ctx)
 }
 
+func (s *Service) UpdateDepartment(ctx context.Context, id, name, description string) (*domain.Department, error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, ErrInvalidInput
+	}
+	d, err := s.repo.FindDepartment(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	d.Name = name
+	d.Description = strings.TrimSpace(description)
+	d.UpdatedAt = time.Now().UTC()
+	if err := s.repo.UpdateDepartment(ctx, d); err != nil {
+		return nil, err
+	}
+	return d, nil
+}
+
+func (s *Service) DeleteDepartment(ctx context.Context, id string) error {
+	if _, err := s.repo.FindDepartment(ctx, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	return s.repo.DeleteDepartment(ctx, id)
+}
+
 func (s *Service) CreateTicket(ctx context.Context, subject, priority, departmentID, requesterID string) (*domain.Ticket, error) {
 	subject = strings.TrimSpace(subject)
 	if subject == "" || requesterID == "" {
@@ -150,8 +181,8 @@ func (s *Service) CloseTicket(ctx context.Context, ticketID string) (*domain.Tic
 	return s.ChangeStatus(ctx, ticketID, domain.StatusClosed)
 }
 
-func (s *Service) ListTickets(ctx context.Context) ([]domain.Ticket, error) {
-	return s.repo.ListTickets(ctx)
+func (s *Service) ListTickets(ctx context.Context, status, departmentID, priority string) ([]domain.Ticket, error) {
+	return s.repo.ListTickets(ctx, status, departmentID, priority)
 }
 
 func (s *Service) GetTicket(ctx context.Context, id string) (*domain.Ticket, []domain.Message, error) {

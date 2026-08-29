@@ -89,11 +89,44 @@ func (h *Handler) Preview(c *fiber.Ctx) error {
 	return response.OK(c, res)
 }
 
+func (h *Handler) Update(c *fiber.Ctx) error {
+	var req struct {
+		Type           string     `json:"type" validate:"required"`
+		Value          int64      `json:"value" validate:"required"`
+		MinOrderAmount int64      `json:"min_order_amount"`
+		MaxUses        int64      `json:"max_uses"`
+		StartsAt       *time.Time `json:"starts_at"`
+		EndsAt         *time.Time `json:"ends_at"`
+		IsActive       *bool      `json:"is_active"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	active := true
+	if req.IsActive != nil {
+		active = *req.IsActive
+	}
+	d, err := h.service.Update(c.Context(), c.Params("id"), req.Type, req.Value, req.MinOrderAmount, req.MaxUses, req.StartsAt, req.EndsAt, active)
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, d)
+}
+
+func (h *Handler) Delete(c *fiber.Ctx) error {
+	if err := h.service.Delete(c.Context(), c.Params("id")); err != nil {
+		return mapErr(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "discount deleted", nil)
+}
+
 func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g := router.Group("/discounts", middleware.Auth(jwt))
 	g.Post("/", middleware.RequireAnyPermission("discount.manage"), h.Create)
 	g.Get("/", middleware.RequireAnyPermission("discount.read"), h.List)
 	g.Post("/preview", middleware.RequireAnyPermission("discount.read"), h.Preview)
+	g.Put("/:id", middleware.RequireAnyPermission("discount.manage"), h.Update)
+	g.Delete("/:id", middleware.RequireAnyPermission("discount.manage"), h.Delete)
 }
 
 func mapErr(c *fiber.Ctx, err error) error {

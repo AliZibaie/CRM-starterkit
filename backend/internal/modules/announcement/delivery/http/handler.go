@@ -89,6 +89,55 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 	})
 }
 
+type updateRequest struct {
+	Title       string `json:"title" validate:"required"`
+	Body        string `json:"body" validate:"required"`
+	Audience    string `json:"audience"`
+	AudienceRef string `json:"audience_ref"`
+}
+
+// @Summary Update announcement
+// @Tags announcement
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path string true "announcement id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/announcements/{id} [put]
+func (h *Handler) Update(c *fiber.Ctx) error {
+	var req updateRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.BadRequest(c, "invalid body", nil)
+	}
+	if err := h.validate.Struct(req); err != nil {
+		return response.BadRequest(c, err.Error(), nil)
+	}
+	a, err := h.service.Update(c.Context(), c.Params("id"), domain.CreateInput{
+		Title: req.Title, Body: req.Body, Audience: req.Audience, AudienceRef: req.AudienceRef,
+	})
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, a)
+}
+
+// @Summary Delete announcement
+// @Tags announcement
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "announcement id"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/announcements/{id} [delete]
+func (h *Handler) Delete(c *fiber.Ctx) error {
+	if err := h.service.Delete(c.Context(), c.Params("id")); err != nil {
+		return mapErr(c, err)
+	}
+	return response.Message(c, fiber.StatusOK, "announcement deleted", nil)
+}
+
 // @Summary Broadcast announcement
 // @Tags announcement
 // @Security BearerAuth
@@ -110,6 +159,8 @@ func RegisterRoutes(router fiber.Router, h *Handler, jwt *jwtutil.Manager) {
 	g.Post("/", middleware.RequireAnyPermission("announcement.create"), h.Create)
 	g.Get("/", middleware.RequireAnyPermission("announcement.read"), h.List)
 	g.Get("/:id", middleware.RequireAnyPermission("announcement.read"), h.Get)
+	g.Put("/:id", middleware.RequireAnyPermission("announcement.create"), h.Update)
+	g.Delete("/:id", middleware.RequireAnyPermission("announcement.create"), h.Delete)
 	g.Post("/:id/broadcast", middleware.RequireAnyPermission("announcement.broadcast"), h.Broadcast)
 }
 

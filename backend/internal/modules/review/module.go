@@ -46,5 +46,6 @@ func (m *Module) RegisterMigrations() []string {
 func (m *Module) RegisterPermissions() []module.Permission {
 	return []module.Permission{
 		{Key: "review.create", Name: "Create Review", Description: "Create product reviews", Module: "review"},
+		{Key: "review.moderate", Name: "Moderate Reviews", Description: "Moderate product reviews", Module: "review"},
 	}
 }
