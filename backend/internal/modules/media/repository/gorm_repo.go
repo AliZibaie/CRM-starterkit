@@ -12,7 +12,7 @@ import (
 type Model struct {
 	ID           string    `gorm:"primaryKey;size:36"`
 	OwnerID      string    `gorm:"size:36;index"`
-	Key          string    `gorm:"size:500;not null"`
+	Key          string    `gorm:"column:storage_key;size:500;not null"`
 	URL          string    `gorm:"size:500;not null"`
 	ThumbnailKey string    `gorm:"size:500"`
 	ThumbnailURL string    `gorm:"size:500"`

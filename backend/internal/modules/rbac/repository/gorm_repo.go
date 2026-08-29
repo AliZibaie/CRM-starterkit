@@ -23,7 +23,7 @@ func (RoleModel) TableName() string { return "roles" }
 
 type PermissionModel struct {
 	ID          string    `gorm:"primaryKey;size:36"`
-	Key         string    `gorm:"uniqueIndex;size:150;not null"`
+	Key         string    `gorm:"column:permission_key;uniqueIndex;size:150;not null"`
 	Name        string    `gorm:"size:150;not null"`
 	Description string    `gorm:"size:255"`
 	Module      string    `gorm:"size:100;index"`
@@ -139,7 +139,7 @@ func (s *Store) FindPermissionByID(ctx context.Context, id string) (*domain.Perm
 
 func (s *Store) FindPermissionByKey(ctx context.Context, key string) (*domain.Permission, error) {
 	var m PermissionModel
-	if err := s.db.WithContext(ctx).First(&m, "key = ?", key).Error; err != nil {
+	if err := s.db.WithContext(ctx).First(&m, "permission_key = ?", key).Error; err != nil {
 		return nil, err
 	}
 	return toPermission(&m), nil
@@ -147,7 +147,7 @@ func (s *Store) FindPermissionByKey(ctx context.Context, key string) (*domain.Pe
 
 func (s *Store) ListPermissions(ctx context.Context) ([]domain.Permission, error) {
 	var rows []PermissionModel
-	if err := s.db.WithContext(ctx).Order("module asc, key asc").Find(&rows).Error; err != nil {
+	if err := s.db.WithContext(ctx).Order("module asc, permission_key asc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
 	out := make([]domain.Permission, 0, len(rows))
@@ -230,11 +230,11 @@ func (s *Store) RoleNamesByUser(ctx context.Context, userID string) ([]string, e
 func (s *Store) PermissionKeysByUser(ctx context.Context, userID string) ([]string, error) {
 	var keys []string
 	err := s.db.WithContext(ctx).Table("permissions").
-		Select("DISTINCT permissions.key").
+		Select("DISTINCT permissions.permission_key").
 		Joins("JOIN role_permissions ON role_permissions.permission_id = permissions.id").
 		Joins("JOIN user_roles ON user_roles.role_id = role_permissions.role_id").
 		Where("user_roles.user_id = ?", userID).
-		Pluck("permissions.key", &keys).Error
+		Pluck("permissions.permission_key", &keys).Error
 	return keys, err
 }
 
@@ -243,7 +243,7 @@ func (s *Store) HasPermission(ctx context.Context, userID, permissionKey string)
 	err := s.db.WithContext(ctx).Table("permissions").
 		Joins("JOIN role_permissions ON role_permissions.permission_id = permissions.id").
 		Joins("JOIN user_roles ON user_roles.role_id = role_permissions.role_id").
-		Where("user_roles.user_id = ? AND permissions.key = ?", userID, permissionKey).
+		Where("user_roles.user_id = ? AND permissions.permission_key = ?", userID, permissionKey).
 		Count(&count).Error
 	return count > 0, err
 }

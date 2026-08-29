@@ -40,7 +40,7 @@ func (ItemModel) TableName() string { return "catalog_items" }
 type AttributeModel struct {
 	ID        string    `gorm:"primaryKey;size:36"`
 	ItemID    string    `gorm:"size:36;uniqueIndex:idx_item_attr;not null"`
-	Key       string    `gorm:"size:100;uniqueIndex:idx_item_attr;not null"`
+	Key       string    `gorm:"column:attr_key;size:100;uniqueIndex:idx_item_attr;not null"`
 	Value     string    `gorm:"type:text;not null"`
 	CreatedAt time.Time `gorm:"not null"`
 }
