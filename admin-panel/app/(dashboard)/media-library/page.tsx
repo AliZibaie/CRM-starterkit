@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 
 interface MediaItem {
   id: string;
+  key?: string;
   filename: string;
   mime_type: string;
   size: number;
@@ -34,7 +35,10 @@ export default function MediaLibraryPage() {
     queryKey: queryKeys.media,
     queryFn: async () => {
       const res = await api.get<MediaItem[]>("/media?scope=all");
-      return res.data ?? [];
+      return (res.data ?? []).map((item, index) => ({
+        ...item,
+        id: item.id || item.key || item.url || `media-${index}`,
+      }));
     },
   });
 
@@ -125,8 +129,9 @@ export default function MediaLibraryPage() {
 
       {gridView ? (
         <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {filtered.map((item) => (
-            <Card key={item.id}>
+          {filtered.map((item, index) => (
+            <div key={`${item.id}-${index}`}>
+              <Card>
               <CardContent className="space-y-2 p-3">
                 {(item.thumbnail_url || item.mime_type?.startsWith("image/")) && (
                   <img
@@ -141,7 +146,8 @@ export default function MediaLibraryPage() {
                   {t("common.delete")}
                 </Button>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           ))}
         </div>
       ) : (

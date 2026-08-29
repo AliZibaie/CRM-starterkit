@@ -61,6 +61,7 @@ function groupByDay(items: { created_at: string }[], days = 7) {
     map.set(dayKey(d), 0);
   }
   items.forEach((item) => {
+    if (!item.created_at) return;
     const key = dayKey(new Date(item.created_at));
     if (map.has(key)) map.set(key, (map.get(key) ?? 0) + 1);
   });
@@ -152,6 +153,7 @@ export default function DashboardPage() {
       kind: "audit" as const,
     }));
     return [...fromTickets, ...fromAudit]
+      .filter((item) => Boolean(item.created_at))
       .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
       .slice(0, 8);
   }, [tickets, auditLogs]);
