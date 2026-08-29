@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +45,7 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Sign In</CardTitle>
+        <CardTitle>{t("account.loginTitle")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form
@@ -56,22 +57,24 @@ function LoginForm() {
           }}
         >
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("account.email")}</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="ltr-field"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("account.password")}</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="ltr-field"
               required
             />
           </div>
@@ -81,7 +84,7 @@ function LoginForm() {
             className="w-full"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Signing in..." : "Sign In"}
+            {mutation.isPending ? t("account.signingIn") : t("account.signIn")}
           </Button>
         </form>
       </CardContent>
@@ -92,7 +95,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <Suspense fallback={<p className="text-muted-foreground">Loading...</p>}>
+      <Suspense fallback={<p className="text-muted-foreground">{t("common.loading")}</p>}>
         <LoginForm />
       </Suspense>
     </div>

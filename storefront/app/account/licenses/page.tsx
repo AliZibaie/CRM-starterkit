@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { t } from "@/lib/i18n";
+import { formatJalali } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -66,23 +68,19 @@ export default function LicensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Licenses</h1>
-          <p className="text-muted-foreground">
-            Products from your paid orders
-          </p>
+          <h1 className="text-3xl font-bold">{t("licenses.title")}</h1>
+          <p className="text-muted-foreground">{t("licenses.subtitle")}</p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/account/orders">Back to Orders</Link>
+          <Link href="/account/orders">{t("tickets.backOrders")}</Link>
         </Button>
       </div>
       {isLoading ? (
-        <p className="text-muted-foreground">Loading licenses...</p>
+        <p className="text-muted-foreground">{t("licenses.loading")}</p>
       ) : licenses.length === 0 ? (
-        <p className="text-muted-foreground">
-          No licenses yet. Complete a purchase to see your licenses here.
-        </p>
+        <p className="text-muted-foreground">{t("licenses.empty")}</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {licenses.map((license) => (
@@ -92,21 +90,23 @@ export default function LicensesPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <p>
-                  <span className="text-muted-foreground">License Key: </span>
-                  <code className="rounded bg-muted px-2 py-1 font-mono text-xs">
+                  <span className="text-muted-foreground">{t("licenses.key")}: </span>
+                  <code className="ltr-field inline-block rounded bg-muted px-2 py-1 font-mono text-xs">
                     {license.item.item_id}-{license.item.id}
                   </code>
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Quantity: </span>
+                  <span className="text-muted-foreground">{t("licenses.quantity")}: </span>
                   {license.item.quantity}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Order: </span>
-                  <span className="font-mono text-xs">{license.orderId}</span>
+                  <span className="text-muted-foreground">{t("licenses.order")}: </span>
+                  <span className="font-mono text-xs ltr-field">
+                    {license.orderId.slice(0, 8)}…
+                  </span>
                 </p>
                 <p className="text-muted-foreground">
-                  Purchased {new Date(license.orderDate).toLocaleDateString()}
+                  {t("licenses.purchased")}: {formatJalali(license.orderDate)}
                 </p>
               </CardContent>
             </Card>

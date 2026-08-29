@@ -7,6 +7,8 @@ import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatPrice } from "@/lib/utils";
+import { t } from "@/lib/i18n";
+import { StepIndicator } from "@/components/checkout/step-indicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +33,9 @@ export default function CheckoutPage() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const [discountCode, setDiscountCode] = useState("");
   const [gateway, setGateway] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -79,40 +84,47 @@ export default function CheckoutPage() {
       if (paymentUrl) {
         window.location.href = paymentUrl;
       } else {
-        throw new Error("No payment URL returned");
+        throw new Error(t("common.error"));
       }
     },
     onError: (err: Error) => setError(err.message),
   });
 
-  if (!accessToken) {
-    return null;
-  }
+  if (!accessToken) return null;
 
   if (cartLoading) {
-    return <p className="text-muted-foreground">Loading checkout...</p>;
+    return <p className="text-muted-foreground">{t("checkout.loading")}</p>;
   }
 
   const items = cart?.items ?? [];
   const total = cart?.total ?? 0;
   const currency = cart?.cart?.currency ?? "IRR";
 
+  const steps = [
+    { id: "cart", label: t("checkout.stepCart") },
+    { id: "checkout", label: t("checkout.stepCheckout") },
+    { id: "payment", label: t("checkout.stepPayment") },
+  ];
+
   if (items.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Checkout</h1>
-        <p className="text-muted-foreground">Your cart is empty.</p>
-        <Button onClick={() => router.push("/")}>Browse Products</Button>
+        <h1 className="text-3xl font-bold">{t("checkout.title")}</h1>
+        <p className="text-muted-foreground">{t("checkout.empty")}</p>
+        <Button onClick={() => router.push("/categories/all")}>
+          {t("common.browseProducts")}
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
-      <h1 className="text-3xl font-bold">Checkout</h1>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <h1 className="text-3xl font-bold">{t("checkout.title")}</h1>
+      <StepIndicator steps={steps} current={1} />
       <Card>
         <CardHeader>
-          <CardTitle>Order Summary</CardTitle>
+          <CardTitle>{t("checkout.summary")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {items.map((item, i) => (
@@ -120,30 +132,28 @@ export default function CheckoutPage() {
               <span>
                 {item.title} × {item.quantity}
               </span>
-              <span>
-                {formatPrice(item.unit_price * item.quantity, currency)}
-              </span>
+              <span>{formatPrice(item.unit_price * item.quantity, currency)}</span>
             </div>
           ))}
-          <div className="border-t pt-3 font-semibold">
-            Total: {formatPrice(total, currency)}
+          <div className="border-t border-border pt-3 font-semibold">
+            {t("cart.total")}: {formatPrice(total, currency)}
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="space-y-4 pt-6">
           <div className="space-y-2">
-            <Label htmlFor="discount">Discount Code</Label>
+            <Label htmlFor="discount">{t("checkout.discountCode")}</Label>
             <Input
               id="discount"
               value={discountCode}
               onChange={(e) => setDiscountCode(e.target.value)}
-              placeholder="Optional"
+              placeholder={t("common.optional")}
             />
           </div>
           {gateways.length > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="gateway">Payment Gateway</Label>
+              <Label htmlFor="gateway">{t("checkout.gateway")}</Label>
               <select
                 id="gateway"
                 value={gateway}
@@ -158,14 +168,52 @@ export default function CheckoutPage() {
               </select>
             </div>
           )}
+          <div className="space-y-2">
+            <Label htmlFor="card">{t("checkout.cardNumber")}</Label>
+            <Input
+              id="card"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              className="ltr-field"
+              placeholder="0000 0000 0000 0000"
+              inputMode="numeric"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="expiry">{t("checkout.cardExpiry")}</Label>
+              <Input
+                id="expiry"
+                value={cardExpiry}
+                onChange={(e) => setCardExpiry(e.target.value)}
+                className="ltr-field"
+                placeholder="MM/YY"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cvv">{t("checkout.cardCvv")}</Label>
+              <Input
+                id="cvv"
+                value={cardCvv}
+                onChange={(e) => setCardCvv(e.target.value)}
+                className="ltr-field"
+                placeholder="123"
+                inputMode="numeric"
+              />
+            </div>
+          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button
-            className="w-full"
-            onClick={() => checkout.mutate()}
-            disabled={checkout.isPending || !gateway}
-          >
-            {checkout.isPending ? "Processing..." : "Pay Now"}
-          </Button>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            <Button variant="outline" onClick={() => router.push("/cart")}>
+              {t("common.back")}
+            </Button>
+            <Button
+              onClick={() => checkout.mutate()}
+              disabled={checkout.isPending || !gateway}
+            >
+              {checkout.isPending ? t("checkout.processing") : t("checkout.payNow")}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

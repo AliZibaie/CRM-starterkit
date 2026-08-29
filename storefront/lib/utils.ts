@@ -6,5 +6,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(amount: number, currency = "IRR") {
-  return new Intl.NumberFormat("fa-IR").format(amount) + " " + currency;
+  const unit = currency === "IRR" ? "ریال" : currency;
+  return `${new Intl.NumberFormat("fa-IR").format(amount)} ${unit}`;
 }
