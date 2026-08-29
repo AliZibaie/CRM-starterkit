@@ -184,6 +184,9 @@
     "pending": "در انتظار",
     "resolved": "حل‌شده"
   },
+  "header": {
+    "searchPlaceholder": "جستجو در پنل..."
+  },
   "auth": {
     "loginTitle": "ورود به پنل مدیریت",
     "signIn": "ورود",
@@ -216,7 +219,10 @@
       "users": "کاربران",
       "orders": "سفارش‌ها",
       "tickets": "تیکت‌ها",
-      "requests": "درخواست‌ها"
+      "requests": "درخواست‌ها",
+      "requestTrend": "روند درخواست‌ها (۷ روز)",
+      "ticketDistribution": "توزیع وضعیت تیکت‌ها",
+      "recentActivity": "آخرین فعالیت‌ها"
     },
     "users": {
       "title": "کاربران",

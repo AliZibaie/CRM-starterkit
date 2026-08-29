@@ -225,7 +225,7 @@ export default function PipelinePage() {
       </div>
 
       {pipelineId && stages.length > 0 && (
-        <div className="flex flex-row-reverse gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-4 overflow-x-auto pb-4">
           {stages.map((s) => (
             <div
               key={s}

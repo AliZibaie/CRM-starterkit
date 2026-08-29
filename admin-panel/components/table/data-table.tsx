@@ -38,7 +38,7 @@ export function DataTable<T extends Record<string, unknown>>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-md border border-border">
+    <div className="overflow-x-auto rounded-2xl border border-border/70 bg-card shadow-sm">
       <table className="w-full text-sm">
         <thead className="border-b border-border bg-muted/50">
           <tr>
